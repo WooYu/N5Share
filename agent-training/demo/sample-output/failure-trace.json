@@ -1,0 +1,481 @@
+{
+  "run_id": "c5caccdebe16",
+  "mode": "simulation",
+  "task": "分析订单 CSV：仅统计 completed，净销售额为 gross 减 refund，按品类汇总并保留订单证据。",
+  "status": "completed",
+  "plan_version": 2,
+  "plan": [],
+  "memory": [
+    "上次错误：字段不存在：sales, refund；实际字段：order_id, category, gross, refund, status。不能把业务名称 sales 当作真实字段；应依据 inspect 证据，使用 gross 减 refund，只统计 completed。"
+  ],
+  "schema": [
+    "order_id",
+    "category",
+    "gross",
+    "refund",
+    "status"
+  ],
+  "observations": [
+    {
+      "ok": true,
+      "tool": "inspect",
+      "value": {
+        "fields": [
+          "order_id",
+          "category",
+          "gross",
+          "refund",
+          "status"
+        ],
+        "rows": 8,
+        "source": "orders.csv",
+        "sample": [
+          {
+            "order_id": "O001",
+            "category": "办公",
+            "gross": "500",
+            "refund": "0",
+            "status": "completed"
+          },
+          {
+            "order_id": "O002",
+            "category": "数码",
+            "gross": "800",
+            "refund": "100",
+            "status": "completed"
+          }
+        ],
+        "data_type": "合成教学数据"
+      }
+    },
+    {
+      "ok": false,
+      "error": "字段不存在：sales, refund；实际字段：order_id, category, gross, refund, status"
+    },
+    {
+      "ok": true,
+      "tool": "aggregate",
+      "value": {
+        "net_sales": "2650.00",
+        "completed_orders": 6,
+        "by_category": {
+          "办公": "1450.00",
+          "数码": "1200.00"
+        },
+        "order_ids": [
+          "O001",
+          "O002",
+          "O004",
+          "O005",
+          "O006",
+          "O008"
+        ],
+        "currency": "CNY",
+        "source": "orders.csv",
+        "formula": "SUM(gross-refund) WHERE status=completed"
+      }
+    },
+    {
+      "ok": true,
+      "tool": "report",
+      "value": {
+        "report": "已完成订单共 6 笔，净销售额 ¥2650.00。品类净额：办公 ¥1450.00；数码 ¥1200.00。取消订单不计入，退款从销售额扣除。证据：orders.csv，订单 O001, O002, O004, O005, O006, O008。这是一份合成教学数据；单期销售额不能证明增长或利润变化。",
+        "evidence": {
+          "net_sales": "2650.00",
+          "completed_orders": 6,
+          "by_category": {
+            "办公": "1450.00",
+            "数码": "1200.00"
+          },
+          "order_ids": [
+            "O001",
+            "O002",
+            "O004",
+            "O005",
+            "O006",
+            "O008"
+          ],
+          "currency": "CNY",
+          "source": "orders.csv",
+          "formula": "SUM(gross-refund) WHERE status=completed"
+        }
+      }
+    }
+  ],
+  "completed_steps": [
+    "S1",
+    "S2",
+    "S3"
+  ],
+  "events": [
+    {
+      "id": "E01",
+      "run_id": "c5caccdebe16",
+      "actor": "调度器",
+      "kind": "Start",
+      "step_id": null,
+      "plan_version": 0,
+      "elapsed_ms": 0,
+      "payload": {
+        "mode": "simulation",
+        "label": "规则模拟决策 + 真实本地工具"
+      }
+    },
+    {
+      "id": "E02",
+      "run_id": "c5caccdebe16",
+      "actor": "规划 Agent",
+      "kind": "Plan",
+      "step_id": null,
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "steps": [
+          {
+            "id": "S1",
+            "goal": "检查数据字段与行数",
+            "done_when": "取得实际字段列表"
+          },
+          {
+            "id": "S2",
+            "goal": "汇总已完成订单的净销售额与品类净额",
+            "done_when": "取得总额、品类金额、订单 ID"
+          },
+          {
+            "id": "S3",
+            "goal": "生成带证据的报告",
+            "done_when": "报告引用计算结果与订单 ID"
+          }
+        ]
+      }
+    },
+    {
+      "id": "E03",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Thought",
+      "step_id": "S1",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "summary": "先检查真实字段和样本，避免猜测数据结构。"
+      }
+    },
+    {
+      "id": "E04",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Action",
+      "step_id": "S1",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "tool": "inspect",
+        "args": {}
+      }
+    },
+    {
+      "id": "E05",
+      "run_id": "c5caccdebe16",
+      "actor": "工具",
+      "kind": "Observation",
+      "step_id": "S1",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "ok": true,
+        "tool": "inspect",
+        "value": {
+          "fields": [
+            "order_id",
+            "category",
+            "gross",
+            "refund",
+            "status"
+          ],
+          "rows": 8,
+          "source": "orders.csv",
+          "sample": [
+            {
+              "order_id": "O001",
+              "category": "办公",
+              "gross": "500",
+              "refund": "0",
+              "status": "completed"
+            },
+            {
+              "order_id": "O002",
+              "category": "数码",
+              "gross": "800",
+              "refund": "100",
+              "status": "completed"
+            }
+          ],
+          "data_type": "合成教学数据"
+        }
+      }
+    },
+    {
+      "id": "E06",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Thought",
+      "step_id": "S2",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "summary": "依据字段证据与反思记录，按完成状态汇总销售额并扣退款。"
+      }
+    },
+    {
+      "id": "E07",
+      "run_id": "c5caccdebe16",
+      "actor": "教学故障注入器",
+      "kind": "Fault",
+      "step_id": "S2",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "message": "将首次汇总字段改为不存在的 sales；这是人为注入，不是模型自然错误。"
+      }
+    },
+    {
+      "id": "E08",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Action",
+      "step_id": "S2",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "tool": "aggregate",
+        "args": {
+          "gross_field": "sales",
+          "refund_field": "refund",
+          "status": "completed"
+        }
+      }
+    },
+    {
+      "id": "E09",
+      "run_id": "c5caccdebe16",
+      "actor": "工具",
+      "kind": "Observation",
+      "step_id": "S2",
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "ok": false,
+        "error": "字段不存在：sales, refund；实际字段：order_id, category, gross, refund, status"
+      }
+    },
+    {
+      "id": "E10",
+      "run_id": "c5caccdebe16",
+      "actor": "规划 Agent",
+      "kind": "Reflexion",
+      "step_id": null,
+      "plan_version": 1,
+      "elapsed_ms": 0,
+      "payload": {
+        "lesson": "上次错误：字段不存在：sales, refund；实际字段：order_id, category, gross, refund, status。不能把业务名称 sales 当作真实字段；应依据 inspect 证据，使用 gross 减 refund，只统计 completed。"
+      }
+    },
+    {
+      "id": "E11",
+      "run_id": "c5caccdebe16",
+      "actor": "规划 Agent",
+      "kind": "Plan",
+      "step_id": null,
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "steps": [
+          {
+            "id": "S2",
+            "goal": "汇总已完成订单的净销售额与品类净额",
+            "done_when": "取得总额、品类金额、订单 ID"
+          },
+          {
+            "id": "S3",
+            "goal": "生成带证据的报告",
+            "done_when": "报告引用计算结果与订单 ID"
+          }
+        ]
+      }
+    },
+    {
+      "id": "E12",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Thought",
+      "step_id": "S2",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "summary": "依据字段证据与反思记录，按完成状态汇总销售额并扣退款。"
+      }
+    },
+    {
+      "id": "E13",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Action",
+      "step_id": "S2",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "tool": "aggregate",
+        "args": {
+          "gross_field": "gross",
+          "refund_field": "refund",
+          "status": "completed"
+        }
+      }
+    },
+    {
+      "id": "E14",
+      "run_id": "c5caccdebe16",
+      "actor": "工具",
+      "kind": "Observation",
+      "step_id": "S2",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "ok": true,
+        "tool": "aggregate",
+        "value": {
+          "net_sales": "2650.00",
+          "completed_orders": 6,
+          "by_category": {
+            "办公": "1450.00",
+            "数码": "1200.00"
+          },
+          "order_ids": [
+            "O001",
+            "O002",
+            "O004",
+            "O005",
+            "O006",
+            "O008"
+          ],
+          "currency": "CNY",
+          "source": "orders.csv",
+          "formula": "SUM(gross-refund) WHERE status=completed"
+        }
+      }
+    },
+    {
+      "id": "E15",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Thought",
+      "step_id": "S3",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "summary": "计算已完成，引用工具证据生成报告。"
+      }
+    },
+    {
+      "id": "E16",
+      "run_id": "c5caccdebe16",
+      "actor": "执行 Agent",
+      "kind": "Action",
+      "step_id": "S3",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "tool": "report",
+        "args": {}
+      }
+    },
+    {
+      "id": "E17",
+      "run_id": "c5caccdebe16",
+      "actor": "工具",
+      "kind": "Observation",
+      "step_id": "S3",
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "ok": true,
+        "tool": "report",
+        "value": {
+          "report": "已完成订单共 6 笔，净销售额 ¥2650.00。品类净额：办公 ¥1450.00；数码 ¥1200.00。取消订单不计入，退款从销售额扣除。证据：orders.csv，订单 O001, O002, O004, O005, O006, O008。这是一份合成教学数据；单期销售额不能证明增长或利润变化。",
+          "evidence": {
+            "net_sales": "2650.00",
+            "completed_orders": 6,
+            "by_category": {
+              "办公": "1450.00",
+              "数码": "1200.00"
+            },
+            "order_ids": [
+              "O001",
+              "O002",
+              "O004",
+              "O005",
+              "O006",
+              "O008"
+            ],
+            "currency": "CNY",
+            "source": "orders.csv",
+            "formula": "SUM(gross-refund) WHERE status=completed"
+          }
+        }
+      }
+    },
+    {
+      "id": "E18",
+      "run_id": "c5caccdebe16",
+      "actor": "确定性校验器",
+      "kind": "Finish",
+      "step_id": null,
+      "plan_version": 2,
+      "elapsed_ms": 0,
+      "payload": {
+        "verified": true,
+        "result": {
+          "net_sales": "2650.00",
+          "completed_orders": 6,
+          "by_category": {
+            "办公": "1450.00",
+            "数码": "1200.00"
+          },
+          "order_ids": [
+            "O001",
+            "O002",
+            "O004",
+            "O005",
+            "O006",
+            "O008"
+          ],
+          "currency": "CNY",
+          "source": "orders.csv",
+          "formula": "SUM(gross-refund) WHERE status=completed"
+        }
+      }
+    }
+  ],
+  "result": {
+    "net_sales": "2650.00",
+    "completed_orders": 6,
+    "by_category": {
+      "办公": "1450.00",
+      "数码": "1200.00"
+    },
+    "order_ids": [
+      "O001",
+      "O002",
+      "O004",
+      "O005",
+      "O006",
+      "O008"
+    ],
+    "currency": "CNY",
+    "source": "orders.csv",
+    "formula": "SUM(gross-refund) WHERE status=completed"
+  },
+  "report": "已完成订单共 6 笔，净销售额 ¥2650.00。品类净额：办公 ¥1450.00；数码 ¥1200.00。取消订单不计入，退款从销售额扣除。证据：orders.csv，订单 O001, O002, O004, O005, O006, O008。这是一份合成教学数据；单期销售额不能证明增长或利润变化。",
+  "verified": true
+}

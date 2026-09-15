@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+agent-training/demo/output/
+qa-output/
+/qa.mjs
+/final-check.mjs
+/completion-audit.md
+/implementation-plan.md
+/training-design-draft.md
+/sources-check.json

@@ -1,0 +1,206 @@
+{
+  "schema_version": 2,
+  "run_id": "80a876039e08415295f9d651b1eb3d6f",
+  "mode": "simulation",
+  "engine": "langgraph",
+  "pattern": "workflow",
+  "scenario": "budget",
+  "status": "stopped",
+  "verified": false,
+  "report": "",
+  "events": [
+    {
+      "id": "E001",
+      "actor": "workflow",
+      "kind": "Start",
+      "payload": {
+        "mode": "simulation",
+        "engine": "langgraph",
+        "pattern": "workflow",
+        "scenario": "budget",
+        "decision_source": "fixed_program",
+        "synthetic": true,
+        "max_steps": 30,
+        "effective_max_steps": 2
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E002",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "workflow",
+        "decision_source": "fixed_program",
+        "step": 1
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E003",
+      "actor": "workflow",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_telemetry",
+          "read_knowledge",
+          "check_evidence",
+          "read_supplemental",
+          "draft",
+          "validate"
+        ],
+        "conditional_steps": [
+          "read_supplemental"
+        ],
+        "decision_source": "fixed_program"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E004",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "read_telemetry",
+        "decision_source": "fixed_program",
+        "step": 2
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E005",
+      "actor": "workflow",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_telemetry",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E006",
+      "actor": "workflow",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.036
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E007",
+      "actor": "workflow",
+      "kind": "Stop",
+      "payload": {
+        "reason": "Graph node budget exhausted",
+        "steps_used": 2
+      },
+      "plan_version": 1
+    }
+  ],
+  "metrics": {
+    "tool_calls": 1,
+    "revision_rounds": 0,
+    "elapsed_ms": 26.241,
+    "evidence_coverage": 1.0
+  },
+  "shared_state": {
+    "observations": [
+      {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.036
+      }
+    ],
+    "plan": [
+      "read_telemetry",
+      "read_knowledge",
+      "check_evidence",
+      "read_supplemental",
+      "draft",
+      "validate"
+    ],
+    "plan_version": 1,
+    "revision_rounds": 0,
+    "issues": [],
+    "draft": {},
+    "review": {},
+    "status": "stopped",
+    "report": "",
+    "verified": false,
+    "case_id": "SYNTH-REMOTE-001",
+    "synthetic": true,
+    "decision_source": "fixed_program",
+    "required_evidence": [
+      "voltage",
+      "dtc",
+      "gateway"
+    ],
+    "vehicle_actions_allowed": false,
+    "steps_used": 2,
+    "max_steps": 30,
+    "effective_max_steps": 2,
+    "verification_scope": "report_evidence_contract_only"
+  },
+  "human_review": {
+    "status": "pending",
+    "required": true,
+    "report_ready": false,
+    "vehicle_actions_allowed": false,
+    "reason": "报告仅供人工复核，不确认故障原因，也不授权任何车辆操作。"
+  }
+}

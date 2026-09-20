@@ -1,0 +1,405 @@
+{
+  "schema_version": 2,
+  "run_id": "45a72301ff154edf84b595efff71c0ad",
+  "mode": "simulation",
+  "engine": "langgraph",
+  "pattern": "workflow",
+  "scenario": "normal",
+  "status": "completed",
+  "verified": true,
+  "report": "合成数据远程诊断报告（待人工审核）\n以下仅通过报告证据契约校验，不代表真实诊断结论。\nvoltage: 11.7 V [E-VOLTAGE]\ndtc: U0121  [E-DTC]\ngateway: reachable  [E-GATEWAY]\n假设：低电压可能与通信故障记录有关，因果关系尚未确认。[E-VOLTAGE, E-DTC, K-LOW-VOLTAGE]\n仍需人工结合现场测量确认；本演示不执行清码、刷写、复位或任何车辆操作。",
+  "events": [
+    {
+      "id": "E001",
+      "actor": "workflow",
+      "kind": "Start",
+      "payload": {
+        "mode": "simulation",
+        "engine": "langgraph",
+        "pattern": "workflow",
+        "scenario": "normal",
+        "decision_source": "fixed_program",
+        "synthetic": true,
+        "max_steps": 30,
+        "effective_max_steps": 30
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E002",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "workflow",
+        "decision_source": "fixed_program",
+        "step": 1
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E003",
+      "actor": "workflow",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_telemetry",
+          "read_knowledge",
+          "check_evidence",
+          "read_supplemental",
+          "draft",
+          "validate"
+        ],
+        "conditional_steps": [
+          "read_supplemental"
+        ],
+        "decision_source": "fixed_program"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E004",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "read_telemetry",
+        "decision_source": "fixed_program",
+        "step": 2
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E005",
+      "actor": "workflow",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_telemetry",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E006",
+      "actor": "workflow",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.038
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E007",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "read_knowledge",
+        "decision_source": "fixed_program",
+        "step": 3
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E008",
+      "actor": "workflow",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_knowledge",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E009",
+      "actor": "workflow",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.018
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E010",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "check_evidence",
+        "decision_source": "fixed_program",
+        "step": 4
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E011",
+      "actor": "workflow",
+      "kind": "Assessment",
+      "payload": {
+        "issues": [],
+        "next": "draft",
+        "decision_source": "fixed_program"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E012",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "draft",
+        "decision_source": "fixed_program",
+        "step": 5
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E013",
+      "actor": "workflow",
+      "kind": "Draft",
+      "payload": {
+        "claims": [
+          {
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "refs": [
+              "E-VOLTAGE"
+            ]
+          },
+          {
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "refs": [
+              "E-DTC"
+            ]
+          },
+          {
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "refs": [
+              "E-GATEWAY"
+            ]
+          }
+        ],
+        "hypothesis": "possible_low_voltage",
+        "hypothesis_refs": [
+          "E-VOLTAGE",
+          "E-DTC",
+          "K-LOW-VOLTAGE"
+        ],
+        "reconciliations": [],
+        "diagnosis_confirmed": false,
+        "recommended_action": "human_review_only"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E014",
+      "actor": "workflow",
+      "kind": "Decision",
+      "payload": {
+        "node": "validate",
+        "decision_source": "fixed_program",
+        "step": 6
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E015",
+      "actor": "workflow",
+      "kind": "Review",
+      "payload": {
+        "accepted": true,
+        "errors": [],
+        "scope": "report_evidence_contract_only"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E016",
+      "actor": "workflow",
+      "kind": "Finish",
+      "payload": {
+        "verified": true,
+        "human_review": "pending",
+        "vehicle_actions_allowed": false
+      },
+      "plan_version": 1
+    }
+  ],
+  "metrics": {
+    "tool_calls": 2,
+    "revision_rounds": 0,
+    "elapsed_ms": 39.475,
+    "evidence_coverage": 1.0
+  },
+  "shared_state": {
+    "observations": [
+      {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.038
+      },
+      {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.018
+      }
+    ],
+    "plan": [
+      "read_telemetry",
+      "read_knowledge",
+      "check_evidence",
+      "read_supplemental",
+      "draft",
+      "validate"
+    ],
+    "plan_version": 1,
+    "revision_rounds": 0,
+    "issues": [],
+    "draft": {
+      "claims": [
+        {
+          "field": "voltage",
+          "value": 11.7,
+          "unit": "V",
+          "refs": [
+            "E-VOLTAGE"
+          ]
+        },
+        {
+          "field": "dtc",
+          "value": "U0121",
+          "unit": "",
+          "refs": [
+            "E-DTC"
+          ]
+        },
+        {
+          "field": "gateway",
+          "value": "reachable",
+          "unit": "",
+          "refs": [
+            "E-GATEWAY"
+          ]
+        }
+      ],
+      "hypothesis": "possible_low_voltage",
+      "hypothesis_refs": [
+        "E-VOLTAGE",
+        "E-DTC",
+        "K-LOW-VOLTAGE"
+      ],
+      "reconciliations": [],
+      "diagnosis_confirmed": false,
+      "recommended_action": "human_review_only"
+    },
+    "review": {
+      "accepted": true,
+      "errors": [],
+      "scope": "report_evidence_contract_only"
+    },
+    "status": "completed",
+    "report": "合成数据远程诊断报告（待人工审核）\n以下仅通过报告证据契约校验，不代表真实诊断结论。\nvoltage: 11.7 V [E-VOLTAGE]\ndtc: U0121  [E-DTC]\ngateway: reachable  [E-GATEWAY]\n假设：低电压可能与通信故障记录有关，因果关系尚未确认。[E-VOLTAGE, E-DTC, K-LOW-VOLTAGE]\n仍需人工结合现场测量确认；本演示不执行清码、刷写、复位或任何车辆操作。",
+    "verified": true,
+    "case_id": "SYNTH-REMOTE-001",
+    "synthetic": true,
+    "decision_source": "fixed_program",
+    "required_evidence": [
+      "voltage",
+      "dtc",
+      "gateway"
+    ],
+    "vehicle_actions_allowed": false,
+    "steps_used": 6,
+    "max_steps": 30,
+    "effective_max_steps": 30,
+    "verification_scope": "report_evidence_contract_only"
+  },
+  "human_review": {
+    "status": "pending",
+    "required": true,
+    "report_ready": true,
+    "vehicle_actions_allowed": false,
+    "reason": "报告仅供人工复核，不确认故障原因，也不授权任何车辆操作。"
+  }
+}

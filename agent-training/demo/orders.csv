@@ -1,9 +1,0 @@
-order_id,category,gross,refund,status
-O001,办公,500,0,completed
-O002,数码,800,100,completed
-O003,数码,900,0,cancelled
-O004,办公,600,150,completed
-O005,数码,400,0,completed
-O006,数码,200,100,completed
-O007,办公,200,0,cancelled
-O008,办公,500,0,completed

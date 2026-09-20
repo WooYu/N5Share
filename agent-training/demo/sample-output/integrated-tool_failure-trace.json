@@ -1,0 +1,390 @@
+{
+  "schema_version": 2,
+  "run_id": "b90046d8456a45ad849c9b2954f90fce",
+  "mode": "simulation",
+  "engine": "langgraph",
+  "pattern": "integrated",
+  "scenario": "tool_failure",
+  "status": "needs_human",
+  "verified": false,
+  "report": "",
+  "events": [
+    {
+      "id": "E001",
+      "actor": "coordinator",
+      "kind": "Start",
+      "payload": {
+        "mode": "simulation",
+        "engine": "langgraph",
+        "pattern": "integrated",
+        "scenario": "tool_failure",
+        "decision_source": "rule_simulation",
+        "synthetic": true,
+        "max_steps": 30,
+        "effective_max_steps": 30
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E002",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "coordinator",
+        "decision_source": "rule_simulation",
+        "step": 1
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E003",
+      "actor": "coordinator",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_telemetry",
+          "read_knowledge",
+          "draft",
+          "review"
+        ],
+        "decision_source": "rule_simulation"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E004",
+      "actor": "evidence",
+      "kind": "Decision",
+      "payload": {
+        "node": "evidence",
+        "decision_source": "rule_simulation",
+        "step": 2
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E005",
+      "actor": "evidence",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_telemetry",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E006",
+      "actor": "evidence",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_telemetry",
+        "ok": false,
+        "records": [],
+        "error": "Synthetic telemetry service persistently unavailable",
+        "elapsed_ms": 0.008
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E007",
+      "actor": "knowledge",
+      "kind": "Decision",
+      "payload": {
+        "node": "knowledge",
+        "decision_source": "rule_simulation",
+        "step": 3
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E008",
+      "actor": "knowledge",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_knowledge",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E009",
+      "actor": "knowledge",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.782
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E010",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "assess",
+        "decision_source": "rule_simulation",
+        "step": 4
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E011",
+      "actor": "coordinator",
+      "kind": "Assessment",
+      "payload": {
+        "issues": [
+          "缺少电压证据（voltage）",
+          "缺少故障码证据（dtc）",
+          "缺少网关连通证据（gateway）"
+        ],
+        "next": "supplemental_read"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E012",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "revise",
+        "decision_source": "rule_simulation",
+        "step": 5
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E013",
+      "actor": "coordinator",
+      "kind": "Revision",
+      "payload": {
+        "reason": [
+          "缺少电压证据（voltage）",
+          "缺少故障码证据（dtc）",
+          "缺少网关连通证据（gateway）"
+        ],
+        "strategy": "一次补充读取；仍不可用则提交人工"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E014",
+      "actor": "coordinator",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_supplemental",
+          "draft",
+          "review"
+        ],
+        "decision_source": "rule_simulation"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E015",
+      "actor": "evidence",
+      "kind": "Decision",
+      "payload": {
+        "node": "supplement",
+        "decision_source": "rule_simulation",
+        "step": 6
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E016",
+      "actor": "evidence",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_supplemental",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E017",
+      "actor": "evidence",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_supplemental",
+        "ok": false,
+        "records": [],
+        "error": "Synthetic telemetry service persistently unavailable",
+        "elapsed_ms": 0.005
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E018",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "draft",
+        "decision_source": "rule_simulation",
+        "step": 7
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E019",
+      "actor": "coordinator",
+      "kind": "Draft",
+      "payload": {
+        "claims": [],
+        "hypothesis": "insufficient_evidence",
+        "hypothesis_refs": [],
+        "reconciliations": [],
+        "diagnosis_confirmed": false,
+        "recommended_action": "human_review_only"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E020",
+      "actor": "reviewer",
+      "kind": "Decision",
+      "payload": {
+        "node": "reviewer",
+        "decision_source": "rule_simulation",
+        "step": 8
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E021",
+      "actor": "reviewer",
+      "kind": "Review",
+      "payload": {
+        "accepted": false,
+        "errors": [
+          "缺少电压证据：报告未提供 voltage 字段",
+          "缺少故障码证据：报告未提供 dtc 字段",
+          "缺少网关连通证据：报告未提供 gateway 字段"
+        ],
+        "scope": "report_evidence_contract_only"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E022",
+      "actor": "reviewer",
+      "kind": "Stop",
+      "payload": {
+        "reason": "补充读取后证据仍不满足契约",
+        "errors": [
+          "缺少电压证据：报告未提供 voltage 字段",
+          "缺少故障码证据：报告未提供 dtc 字段",
+          "缺少网关连通证据：报告未提供 gateway 字段"
+        ]
+      },
+      "plan_version": 2
+    }
+  ],
+  "metrics": {
+    "tool_calls": 3,
+    "revision_rounds": 1,
+    "elapsed_ms": 41.406,
+    "evidence_coverage": 0.0
+  },
+  "shared_state": {
+    "observations": [
+      {
+        "tool": "read_telemetry",
+        "ok": false,
+        "records": [],
+        "error": "Synthetic telemetry service persistently unavailable",
+        "elapsed_ms": 0.008
+      },
+      {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.782
+      },
+      {
+        "tool": "read_supplemental",
+        "ok": false,
+        "records": [],
+        "error": "Synthetic telemetry service persistently unavailable",
+        "elapsed_ms": 0.005
+      }
+    ],
+    "plan": [
+      "read_supplemental",
+      "draft",
+      "review"
+    ],
+    "plan_version": 2,
+    "revision_rounds": 1,
+    "issues": [
+      "缺少电压证据：报告未提供 voltage 字段",
+      "缺少故障码证据：报告未提供 dtc 字段",
+      "缺少网关连通证据：报告未提供 gateway 字段"
+    ],
+    "draft": {
+      "claims": [],
+      "hypothesis": "insufficient_evidence",
+      "hypothesis_refs": [],
+      "reconciliations": [],
+      "diagnosis_confirmed": false,
+      "recommended_action": "human_review_only"
+    },
+    "review": {
+      "accepted": false,
+      "errors": [
+        "缺少电压证据：报告未提供 voltage 字段",
+        "缺少故障码证据：报告未提供 dtc 字段",
+        "缺少网关连通证据：报告未提供 gateway 字段"
+      ],
+      "scope": "report_evidence_contract_only"
+    },
+    "status": "needs_human",
+    "report": "",
+    "verified": false,
+    "case_id": "SYNTH-REMOTE-001",
+    "synthetic": true,
+    "decision_source": "rule_simulation",
+    "required_evidence": [
+      "voltage",
+      "dtc",
+      "gateway"
+    ],
+    "vehicle_actions_allowed": false,
+    "steps_used": 8,
+    "max_steps": 30,
+    "effective_max_steps": 30,
+    "verification_scope": "report_evidence_contract_only"
+  },
+  "human_review": {
+    "status": "pending",
+    "required": true,
+    "report_ready": false,
+    "vehicle_actions_allowed": false,
+    "reason": "报告仅供人工复核，不确认故障原因，也不授权任何车辆操作。"
+  }
+}

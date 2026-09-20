@@ -1,0 +1,14 @@
+<div class="demo-controls">
+  <label>实现方式 <select id="pattern"><option value="workflow">固定工作流（基线）</option><option value="integrated">综合四角色</option><option value="supervisor">主管委派</option><option value="parallel">并行分析</option><option value="review">提案与评审</option></select></label>
+  <label>情景 <select id="scenario"><option value="normal">正常工单</option><option value="missing">资料缺失</option><option value="conflict">证据冲突</option><option value="tool_failure">工具失败</option><option value="budget">预算耗尽</option></select></label>
+  <button class="primary" id="runDemo">运行 LangGraph</button><button id="replayDemo">加载教学回放</button>
+</div>
+<p class="demo-status" id="demoStatus" role="status">仿真工单 · 规则模拟决策 · 只读工具；运行结束后可逐事件查看。</p>
+<div class="demo-metrics" id="demoMetrics"><span>工具调用 <b>—</b></span><span>修订轮次 <b>—</b></span><span>本机耗时 <b>—</b></span><span>证据覆盖 <b>—</b></span></div>
+<div class="demo-layout"><div id="eventList" class="event-list" aria-label="执行事件"></div><div class="collaboration-story">
+  <div id="roleMap" class="role-map" aria-label="当前执行角色"></div>
+  <div id="flowCaption" class="flow-caption">先运行固定工作流，再比较角色协作。</div>
+  <div class="story-scroll" aria-live="polite"><strong id="eventHeading">等待运行或加载回放</strong><p id="eventStory">选择实现方式和情景，逐步观察信息如何到达下一步。</p><div id="observedEvidence" class="observed-evidence">当前已见证据：无</div><div id="revisionStory" class="revision-story">方案变化将在实际修订事件出现后展示。</div></div>
+</div></div>
+<div class="demo-bottom"><button id="stepDemo" disabled>下一事件</button><button id="playDemo" disabled>自动播放</button><button id="showEvent" disabled>事件 JSON</button><button id="showReport" disabled>最终报告</button><button id="showState" disabled>最终状态</button><button id="compareDemo">基线与三种模式</button><span id="eventCounter">0 / 0</span></div>
+<div class="demo-file-row"><label class="file-button">导入轨迹<input id="traceFile" type="file" accept=".json,application/json" aria-label="导入轨迹 JSON"></label><button id="downloadTrace" disabled>导出轨迹</button><span>本版为规则仿真；模型接入点见讲师备注，不包含真实模型调用。</span></div>

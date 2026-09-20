@@ -1,4 +1,10 @@
 @echo off
 cd /d "%~dp0"
-python demo\server.py
+if exist "..\.venv\Scripts\python.exe" (
+  "..\.venv\Scripts\python.exe" demo\server.py
+) else if exist ".venv\Scripts\python.exe" (
+  ".venv\Scripts\python.exe" demo\server.py
+) else (
+  python demo\server.py
+)
 pause

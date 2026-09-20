@@ -1,0 +1,529 @@
+{
+  "schema_version": 2,
+  "run_id": "700005fbc9924a2b915aa62b218c94d8",
+  "mode": "simulation",
+  "engine": "langgraph",
+  "pattern": "integrated",
+  "scenario": "conflict",
+  "status": "completed",
+  "verified": true,
+  "report": "合成数据远程诊断报告（待人工审核）\n以下仅通过报告证据契约校验，不代表真实诊断结论。\nvoltage: 11.7 V [E-VOLTAGE]\ndtc: U0121  [E-DTC]\ngateway: reachable  [E-GATEWAY]\n冲突核对：E-VOLTAGE-OLD=12.6 V @ 2026-09-01T09:00:00Z；选用 E-VOLTAGE=11.7 @ 2026-09-01T10:00:00Z。按补充事件索引匹配事件时刻；较早缓存值保留为历史记录，不用于当前事件判断。 [E-INCIDENT]\n假设：低电压可能与通信故障记录有关，因果关系尚未确认。[E-VOLTAGE, E-DTC, K-LOW-VOLTAGE]\n仍需人工结合现场测量确认；本演示不执行清码、刷写、复位或任何车辆操作。",
+  "events": [
+    {
+      "id": "E001",
+      "actor": "coordinator",
+      "kind": "Start",
+      "payload": {
+        "mode": "simulation",
+        "engine": "langgraph",
+        "pattern": "integrated",
+        "scenario": "conflict",
+        "decision_source": "rule_simulation",
+        "synthetic": true,
+        "max_steps": 30,
+        "effective_max_steps": 30
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E002",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "coordinator",
+        "decision_source": "rule_simulation",
+        "step": 1
+      },
+      "plan_version": 0
+    },
+    {
+      "id": "E003",
+      "actor": "coordinator",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_telemetry",
+          "read_knowledge",
+          "draft",
+          "review"
+        ],
+        "decision_source": "rule_simulation"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E004",
+      "actor": "evidence",
+      "kind": "Decision",
+      "payload": {
+        "node": "evidence",
+        "decision_source": "rule_simulation",
+        "step": 2
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E005",
+      "actor": "evidence",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_telemetry",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E006",
+      "actor": "evidence",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE-OLD",
+            "field": "voltage",
+            "value": 12.6,
+            "unit": "V",
+            "observed_at": "2026-09-01T09:00:00Z",
+            "source": "synthetic_cached_telemetry"
+          },
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.046
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E007",
+      "actor": "knowledge",
+      "kind": "Decision",
+      "payload": {
+        "node": "knowledge",
+        "decision_source": "rule_simulation",
+        "step": 3
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E008",
+      "actor": "knowledge",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_knowledge",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E009",
+      "actor": "knowledge",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.019
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E010",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "assess",
+        "decision_source": "rule_simulation",
+        "step": 4
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E011",
+      "actor": "coordinator",
+      "kind": "Assessment",
+      "payload": {
+        "issues": [
+          "电压证据冲突：缺少唯一匹配事件时刻的记录（voltage）"
+        ],
+        "next": "supplemental_read"
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E012",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "revise",
+        "decision_source": "rule_simulation",
+        "step": 5
+      },
+      "plan_version": 1
+    },
+    {
+      "id": "E013",
+      "actor": "coordinator",
+      "kind": "Revision",
+      "payload": {
+        "reason": [
+          "电压证据冲突：缺少唯一匹配事件时刻的记录（voltage）"
+        ],
+        "strategy": "一次补充读取；仍不可用则提交人工"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E014",
+      "actor": "coordinator",
+      "kind": "Plan",
+      "payload": {
+        "steps": [
+          "read_supplemental",
+          "draft",
+          "review"
+        ],
+        "decision_source": "rule_simulation"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E015",
+      "actor": "evidence",
+      "kind": "Decision",
+      "payload": {
+        "node": "supplement",
+        "decision_source": "rule_simulation",
+        "step": 6
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E016",
+      "actor": "evidence",
+      "kind": "Action",
+      "payload": {
+        "tool": "read_supplemental",
+        "args": {},
+        "read_only": true
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E017",
+      "actor": "evidence",
+      "kind": "Observation",
+      "payload": {
+        "tool": "read_supplemental",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-INCIDENT",
+            "field": "incident_time",
+            "value": "2026-09-01T10:00:00Z",
+            "unit": "",
+            "observed_at": "2026-09-01T10:01:00Z",
+            "source": "synthetic_incident_index"
+          }
+        ],
+        "elapsed_ms": 0.016
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E018",
+      "actor": "coordinator",
+      "kind": "Decision",
+      "payload": {
+        "node": "draft",
+        "decision_source": "rule_simulation",
+        "step": 7
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E019",
+      "actor": "coordinator",
+      "kind": "Draft",
+      "payload": {
+        "claims": [
+          {
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "refs": [
+              "E-VOLTAGE"
+            ]
+          },
+          {
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "refs": [
+              "E-DTC"
+            ]
+          },
+          {
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "refs": [
+              "E-GATEWAY"
+            ]
+          }
+        ],
+        "hypothesis": "possible_low_voltage",
+        "hypothesis_refs": [
+          "E-VOLTAGE",
+          "E-DTC",
+          "K-LOW-VOLTAGE"
+        ],
+        "reconciliations": [
+          {
+            "field": "voltage",
+            "selected_ref": "E-VOLTAGE",
+            "rejected_refs": [
+              "E-VOLTAGE-OLD"
+            ],
+            "context_ref": "E-INCIDENT",
+            "reason": "按补充事件索引匹配事件时刻；较早缓存值保留为历史记录，不用于当前事件判断。"
+          }
+        ],
+        "diagnosis_confirmed": false,
+        "recommended_action": "human_review_only"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E020",
+      "actor": "reviewer",
+      "kind": "Decision",
+      "payload": {
+        "node": "reviewer",
+        "decision_source": "rule_simulation",
+        "step": 8
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E021",
+      "actor": "reviewer",
+      "kind": "Review",
+      "payload": {
+        "accepted": true,
+        "errors": [],
+        "scope": "report_evidence_contract_only"
+      },
+      "plan_version": 2
+    },
+    {
+      "id": "E022",
+      "actor": "reviewer",
+      "kind": "Finish",
+      "payload": {
+        "verified": true,
+        "human_review": "pending",
+        "vehicle_actions_allowed": false
+      },
+      "plan_version": 2
+    }
+  ],
+  "metrics": {
+    "tool_calls": 3,
+    "revision_rounds": 1,
+    "elapsed_ms": 38.251,
+    "evidence_coverage": 1.0
+  },
+  "shared_state": {
+    "observations": [
+      {
+        "tool": "read_telemetry",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-VOLTAGE-OLD",
+            "field": "voltage",
+            "value": 12.6,
+            "unit": "V",
+            "observed_at": "2026-09-01T09:00:00Z",
+            "source": "synthetic_cached_telemetry"
+          },
+          {
+            "id": "E-VOLTAGE",
+            "field": "voltage",
+            "value": 11.7,
+            "unit": "V",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-DTC",
+            "field": "dtc",
+            "value": "U0121",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_freeze_frame"
+          },
+          {
+            "id": "E-GATEWAY",
+            "field": "gateway",
+            "value": "reachable",
+            "unit": "",
+            "observed_at": "2026-09-01T10:00:00Z",
+            "source": "synthetic_gateway_log"
+          }
+        ],
+        "elapsed_ms": 0.046
+      },
+      {
+        "tool": "read_knowledge",
+        "ok": true,
+        "records": [
+          {
+            "id": "K-LOW-VOLTAGE",
+            "field": "voltage_threshold",
+            "value": 12.0,
+            "unit": "V",
+            "observed_at": "2026-09-01T00:00:00Z",
+            "source": "synthetic_training_guide",
+            "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
+          }
+        ],
+        "elapsed_ms": 0.019
+      },
+      {
+        "tool": "read_supplemental",
+        "ok": true,
+        "records": [
+          {
+            "id": "E-INCIDENT",
+            "field": "incident_time",
+            "value": "2026-09-01T10:00:00Z",
+            "unit": "",
+            "observed_at": "2026-09-01T10:01:00Z",
+            "source": "synthetic_incident_index"
+          }
+        ],
+        "elapsed_ms": 0.016
+      }
+    ],
+    "plan": [
+      "read_supplemental",
+      "draft",
+      "review"
+    ],
+    "plan_version": 2,
+    "revision_rounds": 1,
+    "issues": [],
+    "draft": {
+      "claims": [
+        {
+          "field": "voltage",
+          "value": 11.7,
+          "unit": "V",
+          "refs": [
+            "E-VOLTAGE"
+          ]
+        },
+        {
+          "field": "dtc",
+          "value": "U0121",
+          "unit": "",
+          "refs": [
+            "E-DTC"
+          ]
+        },
+        {
+          "field": "gateway",
+          "value": "reachable",
+          "unit": "",
+          "refs": [
+            "E-GATEWAY"
+          ]
+        }
+      ],
+      "hypothesis": "possible_low_voltage",
+      "hypothesis_refs": [
+        "E-VOLTAGE",
+        "E-DTC",
+        "K-LOW-VOLTAGE"
+      ],
+      "reconciliations": [
+        {
+          "field": "voltage",
+          "selected_ref": "E-VOLTAGE",
+          "rejected_refs": [
+            "E-VOLTAGE-OLD"
+          ],
+          "context_ref": "E-INCIDENT",
+          "reason": "按补充事件索引匹配事件时刻；较早缓存值保留为历史记录，不用于当前事件判断。"
+        }
+      ],
+      "diagnosis_confirmed": false,
+      "recommended_action": "human_review_only"
+    },
+    "review": {
+      "accepted": true,
+      "errors": [],
+      "scope": "report_evidence_contract_only"
+    },
+    "status": "completed",
+    "report": "合成数据远程诊断报告（待人工审核）\n以下仅通过报告证据契约校验，不代表真实诊断结论。\nvoltage: 11.7 V [E-VOLTAGE]\ndtc: U0121  [E-DTC]\ngateway: reachable  [E-GATEWAY]\n冲突核对：E-VOLTAGE-OLD=12.6 V @ 2026-09-01T09:00:00Z；选用 E-VOLTAGE=11.7 @ 2026-09-01T10:00:00Z。按补充事件索引匹配事件时刻；较早缓存值保留为历史记录，不用于当前事件判断。 [E-INCIDENT]\n假设：低电压可能与通信故障记录有关，因果关系尚未确认。[E-VOLTAGE, E-DTC, K-LOW-VOLTAGE]\n仍需人工结合现场测量确认；本演示不执行清码、刷写、复位或任何车辆操作。",
+    "verified": true,
+    "case_id": "SYNTH-REMOTE-001",
+    "synthetic": true,
+    "decision_source": "rule_simulation",
+    "required_evidence": [
+      "voltage",
+      "dtc",
+      "gateway"
+    ],
+    "vehicle_actions_allowed": false,
+    "steps_used": 8,
+    "max_steps": 30,
+    "effective_max_steps": 30,
+    "verification_scope": "report_evidence_contract_only"
+  },
+  "human_review": {
+    "status": "pending",
+    "required": true,
+    "report_ready": true,
+    "vehicle_actions_allowed": false,
+    "reason": "报告仅供人工复核，不确认故障原因，也不授权任何车辆操作。"
+  }
+}

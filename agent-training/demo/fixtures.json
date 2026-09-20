@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "case_id": "SYNTH-REMOTE-001",
+  "task": "接单前资料初审与专家辅助：门店报告通信故障 U0121 并请求远程专家咨询；汇总电压、故障码、网关记录与知识资料，补充缺失项，核对冲突记录的事件时刻和采集时间，提交待专家人工复核的证据报告，不操作真实车辆。",
+  "records": {
+    "E-VOLTAGE": {"id": "E-VOLTAGE", "field": "voltage", "value": 11.7, "unit": "V", "observed_at": "2026-09-01T10:00:00Z", "source": "synthetic_freeze_frame"},
+    "E-VOLTAGE-OLD": {"id": "E-VOLTAGE-OLD", "field": "voltage", "value": 12.6, "unit": "V", "observed_at": "2026-09-01T09:00:00Z", "source": "synthetic_cached_telemetry"},
+    "E-DTC": {"id": "E-DTC", "field": "dtc", "value": "U0121", "unit": "", "observed_at": "2026-09-01T10:00:00Z", "source": "synthetic_freeze_frame"},
+    "E-GATEWAY": {"id": "E-GATEWAY", "field": "gateway", "value": "reachable", "unit": "", "observed_at": "2026-09-01T10:00:00Z", "source": "synthetic_gateway_log"},
+    "E-INCIDENT": {"id": "E-INCIDENT", "field": "incident_time", "value": "2026-09-01T10:00:00Z", "unit": "", "observed_at": "2026-09-01T10:01:00Z", "source": "synthetic_incident_index"},
+    "K-LOW-VOLTAGE": {"id": "K-LOW-VOLTAGE", "field": "voltage_threshold", "value": 12.0, "unit": "V", "observed_at": "2026-09-01T00:00:00Z", "source": "synthetic_training_guide", "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."}
+  },
+  "knowledge": ["K-LOW-VOLTAGE"],
+  "scenarios": {
+    "normal": {"telemetry": ["E-VOLTAGE", "E-DTC", "E-GATEWAY"], "supplemental": ["E-INCIDENT"], "failing_tools": []},
+    "missing": {"telemetry": ["E-DTC", "E-GATEWAY"], "supplemental": ["E-VOLTAGE", "E-INCIDENT"], "failing_tools": []},
+    "conflict": {"telemetry": ["E-VOLTAGE-OLD", "E-VOLTAGE", "E-DTC", "E-GATEWAY"], "supplemental": ["E-INCIDENT"], "failing_tools": []},
+    "tool_failure": {"telemetry": ["E-VOLTAGE", "E-DTC", "E-GATEWAY"], "supplemental": ["E-VOLTAGE", "E-DTC", "E-GATEWAY", "E-INCIDENT"], "failing_tools": ["read_telemetry", "read_supplemental"]},
+    "budget": {"telemetry": ["E-VOLTAGE", "E-DTC", "E-GATEWAY"], "supplemental": ["E-INCIDENT"], "failing_tools": []}
+  }
+}

@@ -1,6 +1,6 @@
 # LangSmith Studio 对比演示
 
-[打开 Studio](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024) · [打开原课件](http://127.0.0.1:8765/#7)
+[打开 Studio](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024) · [打开原课件](http://127.0.0.1:8765/#11)
 
 Studio 使用本机 `127.0.0.1:2024` 的官方 LangGraph Agent Server。它和原课件的 `8765` 服务可以同时运行。云端追踪默认关闭；不需要把模型密钥填入 Studio。
 

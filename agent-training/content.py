@@ -1,5 +1,6 @@
 """Chinese training content: synthetic diagnosis examples and instructor notes."""
 from html import escape
+from concepts import concept
 
 
 SOURCES = {
@@ -20,15 +21,15 @@ SOURCES = {
     'research': ('Anthropic · Multi-agent research system', 'https://www.anthropic.com/engineering/multi-agent-research-system'),
 }
 
-# Remove the original slides 03/04/06 (12 minutes), then scale 108 to 90.
-# Integer seconds keep all slide and chapter totals exact.
+# Seven one-minute concept pages precede their demos. Shorten selection,
+# collaboration explanation and framework comparison to retain 90 minutes.
 CHAPTERS = [
     ('开场与目标', 150),
     ('Agent 基础', 150),
-    ('能力演进', 650),
-    ('按复杂度选择方案', 600),
-    ('多 Agent 协作设计', 1100),
-    ('三种框架的工程取舍', 600),
+    ('能力演进', 1070),
+    ('按复杂度选择方案', 480),
+    ('多 Agent 协作设计', 980),
+    ('三种框架的工程取舍', 420),
     ('工作流基线与三个短演示', 750),
     ('综合实战与落地', 1400),
 ]
@@ -150,11 +151,24 @@ for snapshot in graph.stream({}, stream_mode="values"):
 slides = []
 
 
-def add(chapter, title, body, notes, sources=(), layout='', minutes=2):
-    seconds = minutes * 50
+def add(chapter, title, body, notes, sources=(), layout='', minutes=2, seconds=None):
+    if seconds is None:
+        seconds = minutes * 50
+        if chapter == '按复杂度选择方案':
+            seconds = minutes * 40
+        elif chapter == '三种框架的工程取舍':
+            seconds = minutes * 35
+        elif chapter == '多 Agent 协作设计':
+            seconds -= 10 if title.startswith(('共享状态', '协作结束')) else 20
     slides.append(dict(chapter=chapter, title=title, body=body,
                        notes=f'【{duration_text(seconds)}】' + notes, sources=list(sources),
                        layout=layout, seconds=seconds, minutes=seconds / 60))
+
+
+def add_concept(stage):
+    item = concept(stage)
+    layout = 'compact concept-slide' + (' concept-multi' if stage == 7 else '')
+    add('能力演进', **item, layout=layout, seconds=60)
 
 
 add('开场与目标', '高级推理框架与多 Agent 协作',
@@ -186,19 +200,23 @@ add('Agent 基础', '本课学习路线：会判断、懂协作、能搭建',
     'Java 业务服务负责权限，状态与消息可类比 DTO，前端呈现进度和人工确认。最终实战题目是道通远程专家：接单前资料初审与专家辅助。',
     ['patterns', 'graph'], layout='compact', minutes=3)
 
-add('能力演进', '能力演进 ①：大语言模型 LLM',
+add_concept(1)
+
+add('能力演进', '演示 ①：大语言模型 LLM',
     evolution(1) +
     p('先给一个出游建议：能组织语言，还没有当前天气与费用依据。', 'lead') +
     p('机制：根据输入生成回答；离线答案固定；真实模式按当前需求生成。', 'foot') +
     outing_demo(1),
-    '七页展示可以组合的能力，不是技术发展的历史时间线，也不是每个应用必须逐级升级。全程沿用两大一小、半日出游、预算300元、不订票；下拉预算可对照200或100元。'
+    '七组概念与演示展示可以组合的能力，不是技术发展的历史时间线，也不是每个应用必须逐级升级。全程沿用两大一小、半日出游、预算300元、不订票；下拉预算可对照200或100元。'
     'LLM 是大语言模型 Large Language Model。本页的离线模式展示事先写好的回答，例如建议湖畔公园，并提示核对天气与费用；没有实际模型、检索或工具调用。改变天气或预算不会使固定答案获得新的事实依据。'
     '统一合成场馆：湖畔公园为户外，门票60、交通40、餐饮80，总计180元；自然馆为室内，150+60+100=310元；城市博物馆为室内，90+40+80=210元。金额均为本次两大一小的合计。下雨需要室内，但本页并未查证这一约束。'
     '本章节已接入真实模型，点击真实模型演示打开本地运行窗口，操作与提示词见 model-demo-guide.md。模型负责生成建议、提出结构化工具请求、规划或反思，宿主程序负责执行工具、保存状态与限制轮次。下一步演示按钮保留离线规则示意。'
     '这些场馆与价格不是现实推荐，后六页也同时提供离线规则示意与真实模型模式。固定流程足够完成这个已知例子，动画用于比较机制，不证明自主能力。',
     layout='compact outing-slide', minutes=1)
 
-add('能力演进', '能力演进 ②：检索增强生成 RAG',
+add_concept(2)
+
+add('能力演进', '演示 ②：检索增强生成 RAG',
     evolution(2) +
     p('回答前先找资料：雨天选室内，费用必须算全。', 'lead') +
     p('机制：检索 → 引用 → 回答；局限：文档规则不等于实时天气与报价。', 'foot') +
@@ -208,7 +226,9 @@ add('能力演进', '能力演进 ②：检索增强生成 RAG',
     '两大一小、半日、预算300元、不订票保持一致。预算改成200或100时，成本口径仍不能省略交通和餐饮。离线模式的检索和回答均为脚本模拟；真实模式先执行本地关键词检索再调用模型；固定检索链也是工作流。',
     layout='compact outing-slide', minutes=2)
 
-add('能力演进', '能力演进 ③：工具调用 Tool Calling',
+add_concept(3)
+
+add('能力演进', '演示 ③：工具调用 Tool Calling',
     evolution(3) +
     p('把“查一下、算一下”变成可核对的调用结果。', 'lead') +
     p('机制（伪代码）：weather → catalog → sum；局限：查天气、场馆和总价，不等于自动规划。', 'foot') +
@@ -219,7 +239,9 @@ add('能力演进', '能力演进 ③：工具调用 Tool Calling',
     '工具返回事实或错误，不能凭一句已经查过认定调用成功；参数权限与预算由运行时负责。已知调用次序可以直接使用固定工作流。',
     layout='compact outing-slide', minutes=2)
 
-add('能力演进', '能力演进 ④：推理与行动交替 ReAct',
+add_concept(4)
+
+add('能力演进', '演示 ④：推理与行动交替 ReAct',
     evolution(4) +
     p('先试自然馆，算出310元超预算，再查城市博物馆210元。', 'lead') +
     p('ReAct 循环：Thought → Action → Observation → 下一轮 Thought；满足条件或无候选时停止。', 'foot') +
@@ -230,7 +252,9 @@ add('能力演进', '能力演进 ④：推理与行动交替 ReAct',
     '成功、无可行候选、工具错误和无进展都应有明确出口，运行时还要限制步数与时长。单次工具调用不等于 ReAct；本页这种已知重选也可以由固定分支实现。',
     ['react'], layout='compact outing-slide', minutes=2)
 
-add('能力演进', '能力演进 ⑤：规划执行 Plan-and-Execute',
+add_concept(5)
+
+add('能力演进', '演示 ⑤：规划执行 Plan-and-Execute',
     evolution(5) +
     p('先列任务依赖：天气与场馆信息齐备后，才能筛选、算价和验收。', 'lead') +
     p('Plan-and-Execute：先规划再执行；验收失败后，把反馈交给 Reflexion 修订计划。', 'foot') +
@@ -241,7 +265,9 @@ add('能力演进', '能力演进 ⑤：规划执行 Plan-and-Execute',
     '执行器可以是普通函数或 ReAct 循环。离线模式为预写计划，真实模式先请求模型生成计划再执行；固定工作流能表达已知依赖，不必为了有计划而增加智能体。',
     ['plan'], layout='compact outing-slide', minutes=2)
 
-add('能力演进', '能力演进 ⑥：Plan-and-Execute + Reflexion',
+add_concept(6)
+
+add('能力演进', '演示 ⑥：Plan-and-Execute + Reflexion',
     evolution(6) +
     p('从失败中自我修正：找出漏算餐费与天气不符的问题，再修订计划。', 'lead') +
     p('闭环：规划 → 执行 → 失败反馈 → Reflexion → 修订计划 → 再执行与验收。', 'foot') +
@@ -253,7 +279,9 @@ add('能力演进', '能力演进 ⑥：Plan-and-Execute + Reflexion',
     '反思本身可能出错，仍要外部检查；同一错误反复出现或没有新增证据时有限停止。程序审查规则覆盖本例。真实模式用明确标记的教学错误草稿触发模型反思，模型产生计划v2，再用真实工具结果验收。',
     ['reflexion'], layout='compact outing-slide', minutes=2)
 
-add('能力演进', '能力演进 ⑦：多智能体 Multi-Agent',
+add_concept(7)
+
+add('能力演进', '演示 ⑦：多智能体 Multi-Agent',
     evolution(7) +
     p('协作模式：Supervisor 主管分派 / 层次化团队 / Swarm 动态交接', 'lead') +
     p('Agent 间通信传递任务与结果；共享状态保存目标、证据、计划版本和完成状态。', 'foot') +
@@ -263,7 +291,7 @@ add('能力演进', '能力演进 ⑦：多智能体 Multi-Agent',
     '多智能体 Multi-Agent 按职责组织协作。同一出游需求下，天气角色独立读取 weather 与 D01，提交天气和室内外约束；费用角色独立读取全部 catalog 与 D02，提交三个场馆的完整费用及预算判断，不等待天气结论。'
     '协调者拿到两份摘要后取交集：雨天排除湖畔公园，300元预算排除自然馆，留下城市博物馆210元。雨天200或100元无解；晴天200元可选公园180元。合并保留引用与限制，不能覆盖另一角色的证据。'
     '只有各自结果齐备才能交付，部分失败必须说明。界面把两份独立角色摘要放在同一事件展示，不代表后台真实并行；离线模式角色和摘要均由预写规则模拟；真实模式各角色分别调用同一个模型并使用独立上下文。'
-    '七页表示可组合的能力：角色内部仍可使用 RAG、工具、ReAct、规划或反思，并非历史先后或能力排名。这个已知小任务仍用固定工作流即可；后续有独立上下文、工具权限或专业责任时，才评估拆分收益。',
+    '七组概念与演示表示可组合的能力：角色内部仍可使用 RAG、工具、ReAct、规划或反思，并非历史先后或能力排名。这个已知小任务仍用固定工作流即可；后续有独立上下文、工具权限或专业责任时，才评估拆分收益。',
     ['multi'], layout='compact outing-slide', minutes=2)
 
 add('按复杂度选择方案', '决策卡：选择能解决问题的最简单方案',
@@ -650,8 +678,12 @@ add('综合实战与落地', '参考资料：框架与道通远程专家',
     '道通远程专家官方页面提供客户与专家连接、远程诊断、编程、防盗、ADAS、咨询及 VIN、导入报告、发布订单的业务背景，并描述实时语音、文字、视频、电话沟通与服务、连接状态。官方 AI 智能匹配表述未披露 LLM 或多智能体实现。接单前资料初审与专家辅助为本课教学设计；合成 U0121、缺失电压与规则后端不代表厂商自主专家系统。',
     layout='compact', minutes=2)
 
-assert len(slides) == 41
+assert len(slides) == 48
 assert sum(seconds for _, seconds in CHAPTERS) == 90 * 60
 assert sum(slide['seconds'] for slide in slides) == 90 * 60
 assert all(sum(slide['seconds'] for slide in slides if slide['chapter'] == chapter) == seconds
            for chapter, seconds in CHAPTERS)
+
+assert sum('concept-slide' in slide['layout'] for slide in slides) == 7
+assert all(index > 0 and 'concept-slide' in slides[index - 1]['layout']
+           for index, slide in enumerate(slides) if 'outing-slide' in slide['layout'])

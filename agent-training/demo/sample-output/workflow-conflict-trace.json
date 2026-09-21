@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "d14bceef659c4231b570a7b172301762",
+  "run_id": "98cac77ba83a4b08bd0ffd0ddee85e99",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "workflow",
@@ -119,7 +119,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.02
+        "elapsed_ms": 0.032
       },
       "plan_version": 1
     },
@@ -230,7 +230,7 @@
             "source": "synthetic_incident_index"
           }
         ],
-        "elapsed_ms": 0.008
+        "elapsed_ms": 0.007
       },
       "plan_version": 1
     },
@@ -335,7 +335,7 @@
   "metrics": {
     "tool_calls": 3,
     "revision_rounds": 0,
-    "elapsed_ms": 17.627,
+    "elapsed_ms": 16.186,
     "evidence_coverage": 1.0
   },
   "shared_state": {
@@ -377,7 +377,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.02
+        "elapsed_ms": 0.032
       },
       {
         "tool": "read_knowledge",
@@ -408,7 +408,7 @@
             "source": "synthetic_incident_index"
           }
         ],
-        "elapsed_ms": 0.008
+        "elapsed_ms": 0.007
       }
     ],
     "plan": [

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "6e3f30e022ea4c30a4033435b6839c41",
+  "run_id": "c0d5b71bfabd41d594a8465ae4dec2b3",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "parallel",
@@ -82,7 +82,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.005
+        "elapsed_ms": 0.011
       },
       "plan_version": 1
     },
@@ -251,7 +251,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.007
+        "elapsed_ms": 0.006
       },
       "plan_version": 2
     },
@@ -324,7 +324,7 @@
   "metrics": {
     "tool_calls": 3,
     "revision_rounds": 1,
-    "elapsed_ms": 20.516,
+    "elapsed_ms": 21.96,
     "evidence_coverage": 0.0
   },
   "shared_state": {
@@ -334,7 +334,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.005
+        "elapsed_ms": 0.011
       },
       {
         "tool": "read_knowledge",
@@ -357,7 +357,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.007
+        "elapsed_ms": 0.006
       }
     ],
     "plan": [

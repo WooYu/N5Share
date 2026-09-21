@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "f18e21ebc3364c58a4051209b8258dd6",
+  "run_id": "d59638ab72964adebb31dc4e856cdcea",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "supervisor",
@@ -124,7 +124,7 @@
   "metrics": {
     "tool_calls": 1,
     "revision_rounds": 0,
-    "elapsed_ms": 15.76,
+    "elapsed_ms": 16.941,
     "evidence_coverage": 1.0
   },
   "shared_state": {

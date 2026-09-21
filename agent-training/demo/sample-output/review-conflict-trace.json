@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "878dffecb19e406cb5503e55cfb72488",
+  "run_id": "0e41c24db63f4a488999b86df5b25e31",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "review",
@@ -114,7 +114,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.02
+        "elapsed_ms": 0.029
       },
       "plan_version": 1
     },
@@ -423,7 +423,7 @@
   "metrics": {
     "tool_calls": 3,
     "revision_rounds": 1,
-    "elapsed_ms": 24.285,
+    "elapsed_ms": 19.888,
     "evidence_coverage": 1.0
   },
   "shared_state": {
@@ -465,7 +465,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.02
+        "elapsed_ms": 0.029
       },
       {
         "tool": "read_knowledge",

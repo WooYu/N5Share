@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "a52ab5695ccd4a9d944c511bb39cffb7",
+  "run_id": "500b8621db804285bb8dc0619e69d202",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "parallel",
@@ -106,7 +106,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.019
+        "elapsed_ms": 0.021
       },
       "plan_version": 1
     },
@@ -150,7 +150,7 @@
             "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
           }
         ],
-        "elapsed_ms": 0.011
+        "elapsed_ms": 0.034
       },
       "plan_version": 1
     },
@@ -245,7 +245,7 @@
   "metrics": {
     "tool_calls": 2,
     "revision_rounds": 0,
-    "elapsed_ms": 19.857,
+    "elapsed_ms": 19.937,
     "evidence_coverage": 1.0
   },
   "shared_state": {
@@ -279,7 +279,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.019
+        "elapsed_ms": 0.021
       },
       {
         "tool": "read_knowledge",
@@ -295,7 +295,7 @@
             "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
           }
         ],
-        "elapsed_ms": 0.011
+        "elapsed_ms": 0.034
       }
     ],
     "plan": [

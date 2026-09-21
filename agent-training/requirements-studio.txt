@@ -1,0 +1,4 @@
+-r requirements.txt
+langgraph-cli[inmem]==0.4.31
+langgraph-api==0.14.3
+colorama==0.4.6; sys_platform == "win32"

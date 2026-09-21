@@ -1,0 +1,13 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "outing_react": "./demo/studio_graphs.py:react",
+    "outing_supervisor": "./demo/studio_graphs.py:supervisor"
+  },
+  "env": {
+    "LANGSMITH_TRACING": "false",
+    "LANGCHAIN_TRACING_V2": "false",
+    "LANGGRAPH_AUTH_TYPE": "noop",
+    "LANGGRAPH_CLI_NO_ANALYTICS": "1"
+  }
+}

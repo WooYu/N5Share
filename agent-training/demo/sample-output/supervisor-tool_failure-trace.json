@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "ed4286439b6e4cd893246d970aa5d6d9",
+  "run_id": "37c6c140ecb44977b627e2366066e812",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "supervisor",
@@ -82,7 +82,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.006
+        "elapsed_ms": 0.005
       },
       "plan_version": 1
     },
@@ -147,7 +147,7 @@
             "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
           }
         ],
-        "elapsed_ms": 0.016
+        "elapsed_ms": 0.009
       },
       "plan_version": 1
     },
@@ -246,7 +246,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.004
+        "elapsed_ms": 0.003
       },
       "plan_version": 2
     },
@@ -319,7 +319,7 @@
   "metrics": {
     "tool_calls": 3,
     "revision_rounds": 1,
-    "elapsed_ms": 30.762,
+    "elapsed_ms": 18.028,
     "evidence_coverage": 0.0
   },
   "shared_state": {
@@ -329,7 +329,7 @@
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.006
+        "elapsed_ms": 0.005
       },
       {
         "tool": "read_knowledge",
@@ -345,14 +345,14 @@
             "rule": "Voltage below 12.0 V with U0121 supports only a possible low-voltage contribution, not a confirmed fault."
           }
         ],
-        "elapsed_ms": 0.016
+        "elapsed_ms": 0.009
       },
       {
         "tool": "read_supplemental",
         "ok": false,
         "records": [],
         "error": "Synthetic telemetry service persistently unavailable",
-        "elapsed_ms": 0.004
+        "elapsed_ms": 0.003
       }
     ],
     "plan": [

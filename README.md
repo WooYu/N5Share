@@ -1,6 +1,6 @@
 # N5Share · 高级推理框架与多 Agent 协作
 
-面向 Java 后端、前端、客户端开发者的 44 页、120 分钟中文培训。先讲 Agent 基础，用“周末出游”理解七个能力阶段，再进入任务选型、协作架构、开发框架和“接单前资料初审与专家辅助”实战。保留离线 HTML 演示形式。
+面向 Java 后端、前端、客户端开发者的 41 页、90 分钟中文培训。先讲 Agent 基础，用“周末出游”理解七个能力阶段，再进入任务选型、协作架构、开发框架和“接单前资料初审与专家辅助”实战。保留离线 HTML 演示形式。
 
 ## 查看培训
 
@@ -12,18 +12,24 @@
 - [资料来源与框架维护状态](agent-training/sources.md)
 - [完整培训包](Agent-Training-HTML-Demo.zip)
 
+## Studio 对比入口
+
+本机启动 `agent-training/start-studio.cmd` 后，打开 [LangSmith Studio](https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024)。提供 `outing_react` 和 `outing_supervisor` 两个原生 LangGraph 图，与课件共用模型、工具和验收逻辑；支持节点状态查看和汇总前暂停恢复。详细操作见 [Studio 演示指南](agent-training/studio-guide.md)。默认关闭云端追踪，模型凭据留在本地。
+
 ## 内容主线
 
-1. 培训目标与收益 · 5 分钟
-2. Agent 基础、三层地图与工作流基线 · 13 分钟
-3. 从模型调用到多 Agent 的能力演进 · 13 分钟
-4. 按任务复杂度选择搭建方式 · 12 分钟
-5. 主管委派、并行分析、提案与评审 · 22 分钟
-6. AutoGen / MetaGPT / LangGraph 选型 · 12 分钟
-7. 工作流基线与三种协作方式演示 · 15 分钟
-8. 四角色案例、等待客户端上传设计练习和问答 · 28 分钟
+1. 开场与目标 · 2 分 30 秒
+2. Agent 基础 · 2 分 30 秒
+3. 能力演进 · 10 分 50 秒
+4. 按复杂度选择方案 · 10 分钟
+5. 多 Agent 协作设计 · 18 分 20 秒
+6. 三种框架的工程取舍 · 10 分钟
+7. 工作流基线与三个短演示 · 12 分 30 秒
+8. 综合实战与落地 · 23 分 20 秒
 
-前 6 页重写为开场与基础，原第 7–9 页内容合并到相关讲解中，第 7 页开始能力演进；总页数和各章时长不变。七个互动演示依次为 LLM、RAG、Tool Calling、ReAct、Plan-and-Execute、Reflexion、Multi-Agent，都使用周末出游任务，可选择晴天/雨天和 300/200/100 元预算。演示由浏览器本地固定样例驱动，结果可重复，不调用真实模型、实时天气或预订服务。
+前 3 页为封面、90 分钟安排与学习路线，第 04 页开始能力演进。原 03、04、06 页已移除，保留的 108 分钟按 5/6 等比例压缩至 90 分钟。七个互动演示依次为 LLM、RAG、Tool Calling、ReAct、Plan-and-Execute、Plan-and-Execute + Reflexion、Multi-Agent，都使用周末出游任务，可选择晴天/雨天和 300/200/100 元预算。“下一步演示”使用本地规则示意；新增“真实模型演示”通过 CCSwitch 当前供应商与官方 Codex CLI 生成行动和答案，工具仍读取合成资料。
+
+能力演进明确讲解 Thought-Action-Observation 循环、先规划再执行与失败后的自我修正，并比较 Supervisor、层次化、Swarm 的控制权及 Agent 间通信与共享状态。真实模型的运行方法、课堂提示词、工具执行要求和演示边界见[大模型演示指南](agent-training/model-demo-guide.md)。
 
 已知条件与工具映射用工作流；“下一步依赖证据”本身不构成 Agent。路径难以穷举、需要解释非结构化信息并选择工具时才评估 Agent；新增独立上下文、权限或专业责任需求时再评估角色拆分。原始固定字段任务用 `workflow` 即可。
 
@@ -31,7 +37,7 @@
 
 ## 运行现场演示
 
-需要 Python 3.10+ 和 LangGraph；默认不需要模型、API Key 或外部产品账号。Windows PowerShell：
+需要 Python 3.10+ 和 LangGraph；离线模式与诊断运行台不需要模型。能力演进的真实模式另需官方 Codex CLI，以及 CCSwitch 当前选中的 Codex 供应商和有效凭据。Windows PowerShell：
 
 ```powershell
 python -m venv .venv
@@ -41,7 +47,9 @@ python -m venv .venv
 
 浏览器打开 http://127.0.0.1:8765，从目录进入“诊断运行台”。也可安装后双击 agent-training/start-demo.cmd。
 
-默认使用规则模拟决策，真实运行 LangGraph 编排与只读仿真工具。工作流基线加四种协作模式，共五种模式、五种情景、25 份预录轨迹。运行台提供中文故事线、角色图、当前已观察证据、修订前后对照、可展开的事件 JSON、最终报告与状态。“基线与三种模式”同情景比较 `workflow / supervisor / parallel / review`，`integrated` 用于综合案例。基线补读是预设分支，计划保持 v1、修订为 0，无 Revision/Dispatch。
+诊断运行台使用规则模拟决策，真实运行 LangGraph 编排与只读仿真工具。能力演进第 04–10 页可点击“真实模型演示”，支持七阶段及 Supervisor / 层次化 / Swarm，显示模型、调用次数、token 和实际过程。当前凭据仅允许官方 Codex 客户端，程序实际调用官方 CLI，不向浏览器提供密钥；每次运行按供应商规则产生用量。工作流基线加四种协作模式，共五种模式、五种情景、25 份预录轨迹。运行台提供中文故事线、角色图、当前已观察证据、修订前后对照、可展开的事件 JSON、最终报告与状态。“基线与三种模式”同情景比较 `workflow / supervisor / parallel / review`，`integrated` 用于综合案例。基线补读是预设分支，计划保持 v1、修订为 0，无 Revision/Dispatch。
+
+能力演进支持 DeepSeek 官方接口 `deepseek-flash` 作为备用，主接口连接失败或超时等异常会显式切换并保留当前状态。凭据保存在本机受保护存储中，不随培训包分发。
 
 离线回放明确标记为预录记录。案例不连接或操作真实车辆，不声称道通内部采用同样架构；网络链路状态不能证明车辆故障。`review / missing` 缺的是电压，演示评审退回、补充电压和重新审查通过。七个出游演示用于讲清能力差异，与这套五模式、五情景的诊断运行台分开。
 

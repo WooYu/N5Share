@@ -364,6 +364,40 @@ class HttpTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(self.request('GET', path)[0], 404)
 
+    def test_live_api_start_progress_cancel_and_origin_guard(self):
+        from outing_live import RunManager
+        from model_gateway import ModelCancelled
+        import time
+        entered = threading.Event()
+
+        class WaitingModel:
+            metadata = {'model': 'test-model', 'transport': 'test'}
+            def generate(self, instruction, context, cancel):
+                entered.set()
+                cancel.wait(3)
+                raise ModelCancelled('cancelled')
+
+        with patch.object(server, 'LIVE_RUNS', RunManager(WaitingModel)):
+            self.assertEqual(self.request('POST', '/api/outing/start', {'stage': 1}, {'Origin': 'https://evil.example'})[0], 403)
+            self.assertEqual(self.request('POST', '/api/outing/start', {'stage': True})[0], 400)
+            status, body = self.request('POST', '/api/outing/start', {'stage': 1})
+            self.assertEqual(status, 202)
+            job_id = json.loads(body)['id']
+            self.assertTrue(entered.wait(2))
+            self.assertEqual(self.request('POST', '/api/outing/start', {'stage': 1})[0], 409)
+            status, body = self.request('GET', '/api/outing/runs/' + job_id)
+            self.assertEqual(status, 200)
+            self.assertEqual(json.loads(body)['mode'], 'live')
+            self.assertEqual(self.request('POST', '/api/outing/cancel', {'id': job_id})[0], 200)
+            deadline = time.monotonic() + 3
+            while time.monotonic() < deadline:
+                status, body = self.request('GET', '/api/outing/runs/' + job_id)
+                if json.loads(body)['status'] == 'cancelled':
+                    break
+                time.sleep(.01)
+            self.assertEqual(json.loads(body)['status'], 'cancelled')
+            self.assertEqual(self.request('GET', '/api/outing/runs/not-found')[0], 404)
+
 
 if __name__ == '__main__':
     unittest.main()

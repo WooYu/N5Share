@@ -6,6 +6,7 @@ venv/
 .env.*
 !.env.example
 agent-training/demo/output/
+agent-training/deepseek.config
 .langgraph_api/
 agent-training/.langgraph_api/
 qa-output/

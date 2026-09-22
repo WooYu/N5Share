@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-23",
+  "summary": "Python 3.13 独立环境实测：LangGraph 1.2.12 与 AutoGen AgentChat / Ext 0.7.5 均通过 blocked、missing、ready 三情景，共 6 次框架运行；结果与普通脚本基线一致，伪造空报告被宿主拒绝。MetaGPT 已核对官方 API 并检查语法，本机 Python 3.13 不在其支持范围，未执行。所有样本为确定性回放，真实模型质量、速度与成本均未测。",
+  "langgraph": {"version": "1.2.12", "cases": ["blocked", "missing", "ready"], "result": "passed"},
+  "autogen": {"version": "0.7.5", "cases": ["blocked", "missing", "ready"], "result": "passed"},
+  "metagpt": {"result": "not_run", "reason": "Installed Python 3.13 is outside documented >=3.9,<3.12 range"},
+  "baseline_matched": true,
+  "forged_success_rejected": true,
+  "real_model_benchmark": "not_measured"
+}

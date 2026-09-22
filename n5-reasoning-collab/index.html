@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>N5 · 高级推理框架与多 Agent 协作</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#P01" aria-label="返回封面"><b>N5</b><span>高级推理框架与多 Agent 协作</span></a>
+    <nav aria-label="演示工具">
+      <a id="serviceEdition" class="service-edition" hidden>服务版 ↗</a>
+      <label class="route-label"><input id="coreRoute" type="checkbox">核心路线 <span>120′</span></label>
+      <button type="button" data-open="outlineDialog">目录 <kbd>O</kbd></button>
+      <button type="button" data-open="notesDialog">讲稿 <kbd>N</kbd></button>
+      <button type="button" id="fullscreen">全屏 <kbd>F</kbd></button>
+      <button type="button" data-open="helpDialog" aria-label="快捷键帮助">?</button>
+    </nav>
+  </header>
+  <main id="viewport" aria-label="培训课件"><div id="stage"></div></main>
+  <footer class="transport">
+    <span id="chapterLabel"></span>
+    <div class="page-controls"><button type="button" id="previous" aria-label="上一页">←</button><span id="pageCounter" aria-live="polite"></span><button type="button" id="next" aria-label="下一页">→</button></div>
+    <span id="durationLabel"></span>
+    <div id="progress" role="progressbar" aria-label="课件进度" aria-valuemin="1" aria-valuemax="51"><i></i></div>
+  </footer>
+  <dialog id="outlineDialog" aria-labelledby="outlineTitle"><div class="dialog-heading"><h2 id="outlineTitle">课程目录</h2><button type="button" data-close aria-label="关闭目录">×</button></div><p class="dialog-hint">完整路线 148 分钟 · 核心路线 120 分钟。灰色页为核心路线跳过页。</p><div id="outlineList"></div></dialog>
+  <dialog id="notesDialog" aria-labelledby="notesTitle"><div class="dialog-heading"><h2 id="notesTitle">讲师讲稿</h2><button type="button" data-close aria-label="关闭讲稿">×</button></div><p class="dialog-hint">讲稿与投影共屏；私下备课可打开 notes/speaker-notes.md。</p><div id="notesContent"></div></dialog>
+  <dialog id="handoutDialog" aria-labelledby="handoutTitle"><div class="dialog-heading"><h2 id="handoutTitle">实操手册</h2><button type="button" data-close aria-label="关闭实操手册">×</button></div><div id="handoutContent" class="handout-content"></div></dialog>
+  <dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-heading"><h2 id="helpTitle">演示操作</h2><button type="button" data-close aria-label="关闭帮助">×</button></div><dl class="shortcuts"><dt>← / → / Space</dt><dd>上一页 / 下一页</dd><dt>Home / End</dt><dd>封面 / 最后一页</dd><dt>O / N</dt><dd>目录 / 当前页讲稿</dd><dt>F / Esc</dt><dd>全屏 / 关闭弹窗</dd><dt>Ctrl + P</dt><dd>打印讲义：横向、开启背景图形</dd></dl><p>演示可逐步播放、点击历史事件回看或自动播放。天气与预算改变后会重新开始；“预设教学剧本”不代表模型能力。</p><p>双击本文件即可离线授课。真实模型演示请运行 start-demo.cmd，并打开本机服务地址。</p></dialog>
+  <noscript>请在支持 JavaScript 的浏览器中打开本课件。</noscript>
+  <script>window.N5 = {chapters: [], scenarios: {}};</script>
+  <script src="assets/content-kit.js"></script>
+  <script src="assets/framework-handout.js"></script>
+  <script src="slides/ch0-opening.js"></script>
+  <script src="slides/ch1-baseline.js"></script>
+  <script src="slides/ch2-react.js"></script>
+  <script src="slides/ch3-plan-reflexion.js"></script>
+  <script src="slides/ch4-multi-agent.js"></script>
+  <script src="slides/ch5-frameworks.js"></script>
+  <script src="slides/ch6-dual-agent.js"></script>
+  <script src="slides/ch7-code-review.js"></script>
+  <script src="slides/ch8-closing.js"></script>
+  <script src="data/outing-scripts.js"></script>
+  <script src="data/dual-agent-script.js"></script>
+  <script src="data/code-review-script.js"></script>
+  <script src="assets/demo-player.js"></script>
+  <script src="assets/player.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Verified together on Python 3.13; MetaGPT uses its own Python 3.11 environment.
+langgraph==1.2.12
+autogen-agentchat==0.7.5
+autogen-ext==0.7.5

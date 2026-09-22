@@ -1,0 +1,5 @@
+.venv/
+.framework-venv/
+.metagpt-venv/
+__pycache__/
+*.pyc

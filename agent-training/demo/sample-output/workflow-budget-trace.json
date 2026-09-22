@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "run_id": "803ed40c4eeb4aa5a6631e4923c6533c",
+  "run_id": "0363e64693aa4c9c96d76941f3e30ff0",
   "mode": "simulation",
   "engine": "langgraph",
   "pattern": "workflow",
@@ -111,7 +111,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.034
+        "elapsed_ms": 0.036
       },
       "plan_version": 1
     },
@@ -129,7 +129,7 @@
   "metrics": {
     "tool_calls": 1,
     "revision_rounds": 0,
-    "elapsed_ms": 14.156,
+    "elapsed_ms": 28.702,
     "evidence_coverage": 1.0
   },
   "shared_state": {
@@ -163,7 +163,7 @@
             "source": "synthetic_gateway_log"
           }
         ],
-        "elapsed_ms": 0.034
+        "elapsed_ms": 0.036
       }
     ],
     "plan": [

@@ -14,13 +14,13 @@
 
 开场与目标 · 1 分 40 秒
 
-【1 分 40 秒】八章总计 90 分钟，包含投票、演示、练习与讨论，不额外添加隐藏的实操时长。前半程先通过能力演进认识推理机制，再判断何时需要 Agent；后半程把机制映射到角色、框架和工程接口。请 Java 与后端同学关注权限、状态和错误恢复，前端与客户端同学关注事件、可见状态和人工确认入口。三次选择题不考 API 拼写，而是考选择理由。最后每组设计等待客户端上传的暂停与恢复，提交角色边界、消息契约和重复或过期上传的处理路径。
+【1 分 40 秒】七章总计 90 分钟，包含概念、演示、练习与讨论，不额外添加隐藏的实操时长。前 17 页通过能力演进认识推理机制；后半程连续讲流程概念、设计方法、协作模型和同一个远程诊断案例。请 Java 与后端同学关注权限、状态和错误恢复，前端与客户端同学关注事件、可见状态和人工确认入口。最后用运行轨迹复盘角色边界、消息契约和停止条件。
 
 ## 03 · 本课学习路线：会判断、懂协作、能搭建
 
 Agent 基础 · 2 分 30 秒
 
-【2 分 30 秒】按学习动作讲路线，而不是先背分类。第一步会判断：能力演进介绍 ReAct、规划与反思，再用复杂度选择题决定普通程序、工作流或 Agent。第二步懂协作：明确角色产物，再学习主管分派、并行与评审修订。第三步能搭建：比较开发框架，运行基线与短演示，完成综合设计。推理策略 Reasoning Strategy 回答一个任务怎样决策；协作架构 Collaboration Architecture 回答多人怎样分工；开发框架 Development Framework 回答代码怎样管理状态与执行。一个框架能实现多种策略，策略与架构也能组合。Java 业务服务负责权限，状态与消息可类比 DTO，前端呈现进度和人工确认。最终实战题目是道通远程专家：接单前资料初审与专家辅助。
+【2 分 30 秒】按学习动作讲路线。第一步会判断：能力演进介绍检索、工具、ReAct、规划和反思。第二步懂协作：从多 Agent 生命周期进入任务依赖、角色接口、消息、状态和停止。第三步能搭建：比较协作模型，映射到 LangGraph，再用同一份远程诊断工单验证。推理策略回答一个角色怎样决策；协作流程回答多个角色怎样流转；开发框架回答代码怎样管理状态与执行。Java 业务服务负责权限，状态与消息可类比 DTO，前端呈现进度和人工确认。
 
 来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)
 
@@ -130,242 +130,240 @@ Agent 基础 · 2 分 30 秒
 
 来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
 
-## 18 · 决策卡：选择能解决问题的最简单方案
+## 18 · 后半程：把能力组织成多 Agent 系统
 
-按复杂度选择方案 · 2 分钟
+多 Agent 流程概念 · 1 分 20 秒
 
-【2 分钟】这是可带走的决策卡。按从上到下的顺序问，但系统可以混合：固定鉴权、Agent 查证、固定审批可以共存。参考答案：完整文本润色用普通 LLM；已知字段检查与补充条件用普通代码或工作流。下一步依赖运行时证据本身不足以选 Agent；难以枚举路径、需要解释非结构化信息并选择工具时才评估单 Agent。先验证确定性工作流基线，再判断是否需要单 Agent；只有新增独立上下文、工具权限或专业责任要求时再评估多 Agent。隔离也可由普通服务和工作流落实，必须说明模型决策额外解决什么。记录验收率与调用成本，角色数量不是成果指标。
-
-来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-
-## 19 · 互动 ①：固定字段检查，需要 Agent 吗？
-
-按复杂度选择方案 · 2 分钟
-
-【2 分钟】先留十秒独立思考，再请后端同学提出实现方案。参考答案 A，字段与规则明确，结果容易测试，不需要模型推理。点错时读出反馈，避免变成猜老师偏好。追问自由文本输入怎么办：可以用 LLM 提取候选字段，再用确定性规则验证，缺失时让用户确认。这是混合设计，不要求每一步都智能化。本题故意选择简单任务，说明课程不是推广多 Agent。省下不必要的复杂度，才能把预算花在真正需要动态查证的位置。
-
-## 20 · 互动 ②：每次缺失的证据不同，如何处理？
-
-按复杂度选择方案 · 2 分钟
-
-【2 分钟】参考答案 A。缺失字段不同、下一步依赖返回都不构成 Agent 的充分理由。题干已经列出条件与工具映射，写成可测试的路由即可；还应保留预算、超时与失败出口。改变一道条件再讨论：如果输入是格式不统一的维修描述与日志，需要解释语义，工具组合和查询路径难以预先枚举，则可评估有工具白名单和预算的单 Agent。此时选择变化来自任务需求，而不是把已知 if/else 改叫推理。请前端同学描述证据不足时的界面，再请后端同学写出本题三条条件分支；用这个反例检验是否真正理解选型标准。
-
-## 21 · 互动 ③：何时值得拆成多个角色？
-
-按复杂度选择方案 · 2 分钟
-
-【2 分钟】参考答案 B，请说出产物不同、权限不同、审查要求不同三个拆分理由。独立职责不等于模型错误相互独立，同一模型的多个角色也可能犯相同错误。追问是否要四个服务或四个模型：都不需要，可以同进程实现逻辑隔离，部分节点也可以是普通代码。权限应由运行时落实，不能只写在 prompt 里。若去掉新增隔离要求，原始固定字段任务回到工作流基线即可。B 是给定协作方案中符合新边界的选择，不证明多个模型是唯一实现；权限与专业责任仍需普通工程机制落实。
-
-## 22 · 先定义角色产物，再讨论角色数量
-
-多 Agent 协作设计 · 2 分 10 秒
-
-【2 分 10 秒】先写四个接口，不急着写复杂 prompt。证据能追到工具记录，知识能追到文档版本，审查指出具体问题，协调者才有依据修订。若两个角色输入、工具、输出和验收都相同，仅名字不同，先考虑合并。共享底层模型不影响职责隔离，但工具权限需由运行时落实，不能仅靠“不要越权”的提示。综合实验以新增的上下文、权限与专业责任要求教学四类逻辑边界，规则节点模拟这些角色；原始固定字段任务无需多 Agent。请学员说明去掉新增要求后可合并哪些节点，并与 workflow 比较额外成本。
+【1 分 20 秒】上一页已经展示多 Agent 可以按职责协作。后半程不再重复能力清单，而是把问题收敛到系统怎样运行。先认识一条多 Agent 流程，再把它设计成角色和状态，随后比较协作模型，最后用同一张远程诊断工单验证。四段内容前后承接，案例中的字段会从概念页一直沿用到运行台。
 
 来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
 
-## 23 · 模式 ①：主管 Supervisor，集中分派与汇总
+## 19 · 多 Agent 系统的六个组成部分
 
-多 Agent 协作设计 · 2 分 10 秒
+多 Agent 流程概念 · 1 分 50 秒
 
-【2 分 10 秒】按箭头解释集中控制，专家不必知道全队历史，返回结构化产物即可。协调者根据状态决定继续、补查或停止。协调者可以是规则路由，也可以由 LLM 提出下一步再经白名单验证。固定路由演示不能宣传为模型自主分派。若知识者只返回大段文本，版本和限制可能在汇总中丢失。契约化输出、引用保留和明确检查项比简单增加模型更可控。请学员预测正常工单中控制权回到中央的时机，短演示再核对。
+【1 分 50 秒】从系统视角看，多 Agent 不是多个聊天窗口。任务给出共同目标，角色承担不同职责，工具取得外部事实，状态保存当前进展，编排器决定执行顺序，约束负责限制权限和轮次。下一页把这六个组成部分放进一次完整运行，观察它们在什么时刻发生作用。
 
 来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
 
-## 24 · 模式 ②：并行 Parallel，先判断是否独立
+## 20 · 一次运行的完整生命周期
 
-多 Agent 协作设计 · 2 分 10 秒
+多 Agent 流程概念 · 2 分 10 秒
 
-【2 分 10 秒】并行的是证据获取和候选资料检索，资料适用性仍需汇合后核对。先画真实依赖再并发，不是把所有节点连到开始就完成优化。不同采集条件的读数冲突时不能平均，也不能选更快返回的那份。应保留来源、时间、条件，请求复核。一个任务成功也不能掩盖另一个必要任务失败。前端逐步播放是展示顺序，不能证明后端真并发。看调度与时间戳才能判断；总耗时还有汇总和审查，不能承诺角色翻倍耗时减半。让学员找出汇合屏障。
+【2 分 10 秒】一条运行以 run_id 贯穿。编排器先创建任务，再根据依赖分派角色；角色调用工具后把结果写回状态；必要分支完成后才汇合；审查决定交付、修订或转人工。这个生命周期是后面所有设计页的主线。下一页进一步区分两条同时发生但作用不同的路径：控制流和数据流。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
+
+## 21 · 控制流与数据流
+
+多 Agent 流程概念 · 1 分 50 秒
+
+【1 分 50 秒】控制流描述执行顺序和控制权，数据流描述任务、证据和反馈怎样传递。两者必须分别设计：角色被调用不代表拿到了完整上下文，结果写回状态也不代表它能决定下一步。下一页用顺序、并行和反馈回路组合这两条路径。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
+
+## 22 · 顺序、并行与反馈回路
+
+多 Agent 流程概念 · 2 分钟
+
+【2 分钟】顺序、并行和反馈回路是协作模型下面更基础的流程结构。先画依赖再选择结构，不能为了看起来像多 Agent 而强行并发。后面的 Supervisor、Parallel 和 Review 都只是对这些结构分配控制权的不同方式。下一页解释结构中的信息究竟放在哪里。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 23 · 消息、上下文、状态与记忆
+
+多 Agent 流程概念 · 1 分 50 秒
+
+【1 分 50 秒】上一页确定了流程结构，本页确定信息边界。消息是一次交付，上下文是当前角色看到的切片，状态是本次运行的共同记录，记忆才涉及跨步骤或跨运行保留。明确四者后，才能判断并行分支该读什么、写什么。下一页专门处理并行结束后的同步与合并。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)；[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
+
+## 24 · 并行后的同步与合并
+
+多 Agent 流程概念 · 1 分 50 秒
+
+【1 分 50 秒】并行并不只是同时启动两个角色。系统还需要等待屏障和确定的合并规则。证据与知识可以独立读取，但报告必须等待双方；同一字段出现两个值时要保留时间、来源和适用条件。下一页完成生命周期的最后一部分：什么情况下结束，什么情况下交给人。
+
+来源：[Anthropic · Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)；[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
+
+## 25 · 停止、失败与人工介入
+
+多 Agent 流程概念 · 1 分 50 秒
+
+【1 分 50 秒】到这里，一次多 Agent 运行已经从创建走到出口。系统必须区分完成、转人工、受控停止和取消。人工介入表示由人复核或决定，不等于模型自动获得授权。下一章沿用这条生命周期，把抽象流程逐步设计成可实现的协作图。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 26 · 设计方法：从任务到可执行协作图
+
+多 Agent 设计方法 · 1 分 30 秒
+
+【1 分 30 秒】上一章回答系统怎样运行，本章回答怎样把一个业务任务设计成这样的系统。全章使用同一套九步方法：先定义结果，再分析任务依赖，随后划分角色、权限、消息和状态，最后用运行轨迹验证。下一页从第一步开始，先把最终交付和验收写清楚。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 27 · 第一步：定义目标与验收结果
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】先定义结果可以避免角色各自写出看似合理但无法汇合的文本。本案例只生成待专家复核的资料报告，不确认故障原因，也不控制真实车辆。验收标准决定后续需要哪些子任务。下一页把这些子任务画成依赖关系。
+
+来源：[道通 Autel · 远程专家](https://www.auteltech.cn/cloud/3942.jhtml)
+
+## 28 · 第二步：画出任务依赖
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】任务依赖先于角色数量。证据读取和知识检索可以从同一工单独立启动；资料适用性必须同时看到两类结果；报告草稿依赖汇合结果；审查可能产生回边。下一页依据这张依赖图判断哪些边界值得拆成角色。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 29 · 第三步：决定是否拆角色
+
+多 Agent 设计方法 · 1 分 50 秒
+
+【1 分 50 秒】依赖图说明任务怎么拆，角色边界还要看产物、上下文、权限和专业责任。仅仅希望得到不同意见，不足以证明要新增 Agent。角色是逻辑职责，不等于单独模型或服务。下一页把拆出的角色写成清晰接口。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
+
+## 30 · 第四步：定义角色接口
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】角色接口要求输入、输出和禁止事项同时明确。协调者负责路由但不制造事实；证据角色读取本次记录；知识角色给出条件化资料；审查角色只按标准验收。下一页把这些边界落实到工具和权限。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
+
+## 31 · 第五步：分配工具与权限
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】上一页的不得做什么必须转成运行时限制。工具适配器校验参数和访问范围，编排器限制角色、步数和预算，状态层限制可写字段。仅在提示词里写不要越权不能形成安全边界。下一页继续定义角色之间怎样交接。
+
+## 32 · 第六步：设计消息契约
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】角色接口确定以后，消息契约负责可靠交接。run_id 和 task_id 解决归属，plan_version 防止旧结果覆盖新计划，status 和 missing 说明完整度，evidence_refs 让依据可查询。下一页把有效消息合并进共享状态。
+
+## 33 · 第七步：设计共享状态
+
+多 Agent 设计方法 · 2 分 10 秒
+
+【2 分 10 秒】消息到达后，接收端按照字段所有权更新共享状态。事实不能被草稿覆盖，审查者不能修改证据，模型角色不能自行写入人工批准。并行写入同一字段时必须使用独立字段或明确 reducer。下一页处理状态更新中最容易出错的冲突、重试和版本。
+
+来源：[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
+
+## 34 · 第八步：处理冲突、重试与版本
+
+多 Agent 设计方法 · 2 分 10 秒
+
+【2 分 10 秒】共享状态需要可重复更新，也需要拒绝不合时宜的更新。去重解决重试，来源和时间解释冲突，计划版本隔离迟到结果，重试上限防止死循环。下一页用可观察轨迹检查前八步是否真的工作。
+
+来源：[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)；[LangGraph · Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)
+
+## 35 · 第九步：用轨迹验证设计
+
+多 Agent 设计方法 · 2 分钟
+
+【2 分钟】设计完成后，不以一次成功回答作为验收。轨迹要能证明分派、工具调用、并行汇合、修订和停止都按契约发生。到这里，我们已经有了一张可执行协作图。下一章比较五种协作模型如何分配这张图中的控制权。
 
 来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[Anthropic · Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
 
-## 25 · 模式 ③：评审 Review，用明确标准修订
+## 36 · 协作模型：五种控制关系
 
-多 Agent 协作设计 · 2 分 10 秒
+协作模型与实现 · 1 分 40 秒
 
-【2 分 10 秒】审查输出必须可操作，例如补哪条引用、删哪句越界表述，不只给一个分数。修订者逐条处理，再按同一标准复核。真实证据缺失不是文案问题，修改措辞不能补齐事实。可以生成注明不足的阶段性结果，但不能标成材料完整的最终建议。审查可用规则、模型或混合实现；模型通过不代表结论正确，更不代表人工授权。观察修订次数、反馈内容和是否新增有效证据。让学员解释为什么不能循环到所有角色都满意。
+【1 分 40 秒】上一章已经确定任务依赖和角色接口，本章只改变控制权如何移动。五种协作模型不是互斥产品：Supervisor 可以在内部并行，生成结果可以再进入 Review，层次化系统的某一层也可以使用 Handoff。下一页从最容易建立统一出口的 Supervisor 开始。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)；[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 37 · Supervisor：集中分派与汇总
+
+协作模型与实现 · 2 分 10 秒
+
+【2 分 10 秒】Supervisor 每次收回控制权，根据最新状态选择下一位角色。专家角色不需要知道完整团队历史，只需要完成结构化子任务。协调者可以由规则或模型提出决策，但运行时仍校验白名单和预算。下一页保留同一任务图，把可独立的证据与知识分支改为并行。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)；[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+## 38 · Parallel：独立执行与统一汇合
+
+协作模型与实现 · 2 分钟
+
+【2 分钟】Parallel 把前一页的两个独立子任务同时启动，但仍保留统一汇合和验收。一个分支成功不能掩盖另一个必要分支失败，逐步播放界面也不能证明后端并发。下一页讨论另一种控制方式：不回到中央，而由当前角色直接转交。
+
+来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[Anthropic · Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
+
+## 39 · Handoff、Swarm 与层次化
+
+协作模型与实现 · 2 分钟
+
+【2 分钟】Handoff 和 Swarm 都让控制权沿角色转移，层次化则增加协调层级。它们比集中式更依赖交接契约和无进展检测。本课综合案例不使用 Swarm 或多层团队，因为四个角色还不需要这种复杂度。下一页回到案例会实际使用的反馈模型 Review。
+
+来源：[LangChain · Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
+
+## 40 · Review：独立评审与有限修订
+
+协作模型与实现 · 2 分钟
+
+【2 分钟】Review 不是再生成一遍答案，而是用明确标准检查草稿。反馈必须能触发补证据、删除越界表述或重新核对条件。修订次数受全局预算限制。现在五种控制关系已经建立，下一页把它们映射到开发框架，而不是重新讲一遍协作概念。
 
 来源：[Anthropic · Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)；[Reflexion · NeurIPS 2023](https://arxiv.org/abs/2303.11366)
 
-## 26 · 消息 Message：接收方不应该猜上下文
+## 41 · 从协作模型到开发框架
 
-多 Agent 协作设计 · 2 分 10 秒
+协作模型与实现 · 2 分 10 秒
 
-【2 分 10 秒】同一工单可多次运行，一次运行有多个子任务，所以 run_id 和 task_id 不可混淆。版本字段只有接收端真的检查才防止旧结果覆盖。partial 表示部分证据返回，missing 指出下一步需要什么。引用要能查到记录，不能由模型随意生成编号。跨进程还要考虑消息 ID、幂等键、确认与超时，本页只展示最小字段。Java DTO、Python 类型和前端 TypeScript 类型应共享契约或进行一致性校验，避免某端把 partial 当成 complete。请学员解释一条旧版本消息应如何处理。
+【2 分 10 秒】框架选择发生在流程和角色设计之后。LangGraph 适合显式状态图；AutoGen 更强调消息和团队交互；MetaGPT 强调角色、动作和 SOP。框架不能替代领域工具、权限、验收或终止设计。本课只深入 LangGraph，其他框架保留为结构映射。下一页把前面的设计元素逐项对应到 StateGraph。
 
-## 27 · 共享状态 State：事实、草稿与批准分开
+来源：[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)；[AutoGen · 官方仓库](https://github.com/microsoft/autogen)；[MetaGPT · 官方仓库](https://github.com/FoundationAgents/MetaGPT)
 
-多 Agent 协作设计 · 3 分 10 秒
+## 42 · LangGraph：把设计映射为状态图
 
-【3 分 10 秒】共享状态是任务工作记录，不是所有聊天历史拼成字符串。事实、建议和批准具有不同可信度与写入来源，必须分开。两个节点都返回 results 字符串可能覆盖。可以拆成 evidence 与 knowledge，或明确列表合并规则。LangGraph reducer 解决图内合并，不自动处理外部数据库事务与分布式锁。请两位学员扮演证据和知识角色，说出能写哪些字段。审查者可要求修订草稿，不能改原始证据或设置人工批准。追问多次重试是否会重复追加同一证据，借此说明去重与版本检查。
+协作模型与实现 · 2 分钟
 
-来源：[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
-
-## 28 · 协作结束：谁有权说“够了”？
-
-多 Agent 协作设计 · 2 分 20 秒
-
-【2 分 20 秒】人工介入 HITL 即 Human-in-the-Loop，指在流程中引入人的复核或决定；标记待确认并不等于已实现审批恢复。请画出一个死循环：协调者要求补资料，资料不可得，审查继续要求补资料。需要全局预算和无进展检测，不能只给每个角色一句适时停止。进展可以是新增有效证据或消除具体待审问题，反复换措辞不算进展。知识检索成功而证据工具失败，仍不是整次任务成功。生产系统还需传播用户取消。本课重点覆盖正常、缺失、冲突、工具失败和预算耗尽，轨迹可回放不代表跨进程恢复。请学员说明每个异常出口给用户保留什么。
-
-## 29 · 本课为什么选 LangGraph：约束先于框架
-
-三种框架的工程取舍 · 35 秒
-
-【35 秒】回到开头三层地图：任务解法和责任划分先确定，框架最后决定。本课要在同一轨迹契约下明确展示分支、汇合与回路，所以选择 LangGraph；不据此声称它的诊断效果更好。节点、领域规则、消息校验、权限、预算与异常处理仍须手写。图框架不提供维修知识，也不把规则节点变成自主 Agent。
-
-来源：[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)；[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
-
-## 30 · 约束改变时：何时考虑另外两种框架
-
-三种框架的工程取舍 · 1 分 10 秒
-
-【1 分 10 秒】AutoGen 可在已有 AgentChat 团队、消息交互和委派占主导且能承担维护迁移成本时作为候选。AgentChat 与 Core 的抽象不同，不混用旧版 0.2 示例；新项目还应考虑其官方迁移建议。MetaGPT 适合业务确有角色 SOP 和明确交付物、团队愿意适配其流程假设的情况；固定字段读取不足以支持采用它。诊断角色、工具和验收依旧要写。本课代码使用 Python，不代表三个框架在 Java、Python、TypeScript 或 .NET 上功能对等。按所选版本核对 SDK；Java 与客户端可通过服务接口接入，无需为框架重写整个业务系统。
-
-来源：[AutoGen · 官方仓库](https://github.com/microsoft/autogen)；[MetaGPT · 官方仓库](https://github.com/FoundationAgents/MetaGPT)；[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)
-
-## 31 · 比较 ②：恢复、生态与维护成本
-
-三种框架的工程取舍 · 1 分 45 秒
-
-【1 分 45 秒】LangGraph 提供 persistence 与 interrupt，但要配置存储、线程标识、恢复路径和人工输入流程。没有配置不能宣称重启进程可恢复。AutoGen 要按具体组件和版本核对状态保存语义；MetaGPT 要检查所选角色、动作和产物，不从框架名字推断自动恢复。保存 JSON 轨迹是回放和审计，不是恢复执行。本课 Demo 不承诺生产持久恢复。生态丰富只是线索，团队能否维护、测试、升级决定采用成本。问学员有检查点是否就可安全重放外部写入，答案还需要幂等和结果核对。
-
-来源：[AutoGen · 官方仓库](https://github.com/microsoft/autogen)；[MetaGPT · 官方仓库](https://github.com/FoundationAgents/MetaGPT)；[LangGraph · Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)
-
-## 32 · 维护现状：选型前必须核对的事实
-
-三种框架的工程取舍 · 1 分 10 秒
-
-【1 分 10 秒】核对日期为 2026-09-21。AutoGen README 明确 Maintenance Mode，不再新增功能或增强，由社区维护；新用户推荐 Microsoft Agent Framework。维护模式不等于仓库不能使用或现有应用立即失效。MetaGPT Python 范围来自 README，仍需核对具体 release 与依赖，不能仅凭 README 推断活跃或停更。LangGraph 文档说明能力，不说明本课已全部配置。日期不是永久承诺，正式立项再检查 releases、问题响应和升级路径。迁移只作脚注，不新增第四套框架教学。
-
-来源：[AutoGen · 官方仓库](https://github.com/microsoft/autogen)；[MetaGPT · 官方仓库](https://github.com/FoundationAgents/MetaGPT)；[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)
-
-## 33 · AutoGen 与 MetaGPT：结构映射即可入门
-
-三种框架的工程取舍 · 1 分 10 秒
-
-【1 分 10 秒】左侧使用当前 AssistantAgent 与 AgentTool 命名，不使用旧版 0.2 GroupChat。model_client 需外部提供有效配置；此片段省略领域工具、提示词、异步执行与资源关闭，不作为完整可运行项目。右侧故意用 Role、Action、Team、SOP 表达结构，不伪造不存在的诊断 SDK。实际实现要按框架接口定义角色、动作、消息和产物。本页不现场安装三套依赖，重点是指出分派在哪里、状态在哪里、谁判断停止。主实现继续用 LangGraph，避免零基础学员陷入三个框架的版本细节。
-
-来源：[AutoGen · AgentChat 文档](https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html)；[MetaGPT · 官方仓库](https://github.com/FoundationAgents/MetaGPT)
-
-## 34 · LangGraph：把协作设计变成显式图
-
-三种框架的工程取舍 · 1 分 10 秒
-
-【1 分 10 秒】用状态机类比：State 是任务对象，Node 是处理函数，Edge 是执行关系。参数校验节点可以是普通程序，不必叫智能体。框架允许混合普通函数与模型调用，但课堂当前只实现固定规则决策。未来替换模型节点仍要保留工具结果、schema 和验收器，不会自动提升事实可靠性。后端拒绝真实模型选项，不应现场尝试切换。检查点和 interrupt 是需要配置的能力。把结果设成待人工确认，不代表已完成跨进程持久暂停与审批恢复。综合实战展示实际 StateGraph API，先理解机制再扩展生产能力。
+【2 分钟】State 对应共享状态，Node 对应角色或确定性处理器，Edge 对应控制流，Reducer 负责并行结果合并，END 对应统一出口。代码片段只展示两个分支等待后进入审查。下一章不再增加新概念，而是沿用这张图进入同一份远程诊断工单。
 
 来源：[LangGraph · 官方概览](https://docs.langchain.com/oss/python/langgraph/overview)；[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)；[LangGraph · Interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)
 
-## 35 · 固定工作流 Workflow：完成原始任务
+## 43 · 案例起点：固定工作流基线
 
-工作流基线与三个短演示 · 1 分 40 秒
+案例演示与复盘 · 2 分 20 秒
 
-【1 分 40 秒】本页 1 分 40 秒先看基线：核对 workflow / missing 和来源标签，运行后找出固定补充条件、read_supplemental 与通过后的待审核报告。基线采用同一 fixtures、工具与轨迹 schema，不靠降低验收标准简化。先看中文故事线、角色图和当前已观察证据，再展开事件 JSON 核对参数。基线能完成原始三字段任务，接下来仅在新增上下文、权限或专业责任隔离要求下讨论角色模式。三个短演示各用一个异常观察机制，不能直接作性能排名；章末用“基线与三种模式”统一情景对比 workflow、supervisor、parallel、review。现场运行和录制回放保持明确来源。
+【2 分 20 秒】案例从固定工作流开始，沿用前面定义的输入、状态和验收标准。规则已经知道缺电压时调用 read_supplemental，因此不需要 Agent 决定下一步。先确认基线能够生成待人工复核的报告。后面三页只改变控制关系，证据、工具和验收口径保持不变。
 
-## 36 · 短演示 ①：主管委派 Supervisor / 重新分派
+来源：[道通 Autel · 远程专家](https://www.auteltech.cn/cloud/3942.jhtml)
 
-工作流基线与三个短演示 · 3 分 20 秒
+## 44 · 案例演示 ①：Supervisor 重新分派
 
-【3 分 20 秒】先用三十秒预测，再打开运行台核对 supervisor / missing。现场运行后看初次分派和工具返回；服务不可用就加载对应回放，并说明是历史轨迹。暂停在协调者发现缺少 E-VOLTAGE 的时刻，观察它依据新反馈修订计划并把补充读取分给证据角色，随后再汇总。这与后面评审演示不同：此处协调者在正式建议前发现问题，review 模式在草稿审查后退回。检查 read_supplemental 返回以及计划版本、引用和待人工确认状态。路由由固定规则决定，不称为模型自主选择。结束后返回本段，用一句话说明重新分派的触发依据，控制在 3 分 20 秒。
+案例演示与复盘 · 2 分 40 秒
 
-## 37 · 短演示 ②：并行分析 Parallel / 证据冲突
+【2 分 40 秒】在同一工单上，Supervisor 把固定补读改成集中协调。先看初次分派，再停在协调者发现缺少 E-VOLTAGE 的事件；随后核对计划版本变为 v2，并把补充读取重新分派给证据角色。下一页仍使用同一工单，但观察两个独立分支怎样并行以及怎样合并冲突。
 
-工作流基线与三个短演示 · 2 分 30 秒
+## 45 · 案例演示 ②：Parallel 冲突合并
 
-【2 分 30 秒】核对 parallel / conflict，说明冲突是合成场景主动设置，不是声称模型自然犯错。运行或加载相同组合回放。比较两类产物，问为什么不能采用最后返回的结论。当前 conflict 场景通过核对时间戳解释冲突，保留原始读数与适用条件，不删除旧证据。在汇合处检查和解依据，最终建议仍待人工确认；若时间和条件无法解释冲突，设计上应请求人工复核。页面逐个播放不能证明后台并行，判断要看图和时间戳。不同异常场景下的单次结果不能用于宣称并行更快或更慢。回到演示页，用一句话描述合并规则。
+案例演示与复盘 · 2 分 40 秒
 
-## 38 · 短演示 ③：评审修订 Review / 缺失电压
+【2 分 40 秒】本页把案例切换到 conflict 情景，角色和状态字段不变。证据与知识并行完成后，汇合节点看到 11.7 V 和较早缓存的 12.6 V；系统依据事件时间说明取舍，同时保留两份记录。下一页继续沿用缺失电压情景，观察问题在草稿之后才被审查者发现时会怎样回退。
 
-工作流基线与三个短演示 · 3 分 20 秒
+## 46 · 案例演示 ③：Review 退回修订
 
-【3 分 20 秒】核对 review / missing，先猜审查会退回什么，再现场运行或加载明确标注的回放。暂停在第一条反馈，读出具体缺失，不能只说质量不好。当前 missing 缺少 voltage 电压证据 E-VOLTAGE，不是采集时间。先看缺电压的草稿和 review 退回，再看计划 Revision 更新 plan_version 与 revision_rounds，随后 read_supplemental 返回电压记录并追加 observations，重写 draft，最后重新审查通过。用运行台的修订前后对照核对引用与缺失项，再展开事件 JSON 确认 E-VOLTAGE 来源。missing 可恢复并生成待人工确认的报告；若补充不可得则应转人工，tool_failure 展示工具持续失败的分支。规则评审通过不等于人工批准。完成后返回本段回顾。
+案例演示与复盘 · 2 分 40 秒
 
-## 39 · 基线与三种模式：新增复杂度换来了什么
+【2 分 40 秒】与 Supervisor 页不同，这次协调者先形成草稿，审查者再发现缺少电压证据。反馈必须指出 E-VOLTAGE，而不是只给低分。系统补充证据后重写并重新审查，revision_rounds 记录实际修订次数。下一页把集中分派、并行取数和评审回路组合进同一条运行。
 
-工作流基线与三个短演示 · 1 分 40 秒
+来源：[Reflexion · NeurIPS 2023](https://arxiv.org/abs/2303.11366)
 
-【1 分 40 秒】用“基线与三种模式”比较 workflow、supervisor、parallel、review；integrated 留给综合案例。先看基线已能交付什么，再解释新隔离要求带来的分派、汇合和独立审查价值。核对结束状态、证据覆盖、调用量、修订与耗时；workflow 计划保持 v1、修订为 0，没有 Revision/Dispatch，预设补读不等于重规划。规则模拟成功不证明多 Agent 模型质量提升。并行可能降低墙钟时间，却增加总调用量与合并成本。保持同一情景、运行来源与预算才可比较，多次运行再谈稳定性。不同异常短演示只用于认识机制，回放不能估算当前机器或模型延迟。
+## 47 · 综合运行：同一状态串起全部流程
 
-## 40 · 综合设计：四角色、一份状态、一个出口
+案例演示与复盘 · 5 分 20 秒
 
-综合实战与落地 · 2 分 30 秒
+【5 分 20 秒】综合运行台使用 integrated 模式和同一张 SYNTH-REMOTE-001 工单，把前面三种模型组合起来。先运行 normal，按时间线指出协调分派、并行证据与知识、汇合、草稿和审查。再运行 missing 或 conflict，观察 plan_version、observations 和 review 怎样连续变化。随后运行 tool_failure，确认系统保留错误和已有证据并进入 needs_human；最后运行 budget，确认 status=stopped 且没有伪造成功报告。界面优先看中文故事线、角色图、当前证据和修订前后对照，再展开事件 JSON 核对消息字段。运行台使用规则模拟角色决策和实际 LangGraph 编排，不连接真实车辆。服务不可用时使用预录轨迹，并明确说明是历史回放。完成演示后不要切换新主题，直接进入下一页，用刚才的同一条轨迹反推设计。
 
-【2 分 30 秒】在新增上下文、工具权限与专业责任隔离的教学假设下找出三种模式：协调者集中分派，证据与知识独立取数，审查回边有限修订。原始固定字段任务用 workflow 即可；四角色不需要四台服务器或四个模型。协调者在多个阶段执行仍是一个职责：先安排任务，再综合产物。缺引用可退回修订，缺无法获取的证据应进入待补充或停止，不强行重复生成。问谁能批准真实车辆操作，答案是图中没有模型角色有此权限。本课只生成建议，人工审批是业务边界，没有实现真实车端控制。让学员给每条箭头说出一个必需字段。
+## 48 · 案例复盘：从运行轨迹回看设计
 
-## 41 · LangGraph API 骨架：独立教学示例
+案例演示与复盘 · 3 分 10 秒
 
-综合实战与落地 · 2 分 30 秒
+【3 分 10 秒】最后一页不再新增框架或接口，而是回到第 18 页的四个问题。请学员从刚才的 integrated 轨迹指出流程、角色、状态、模型和异常出口。练习把缺失电压改成等待客户端上传：保存 run_id、plan_version、observations、剩余预算和恢复节点；上传后检查请求版本与幂等键，再从待补充节点恢复。当前 Demo 没有实现跨进程暂停恢复，这一题只做设计。课程结论是先画清流程，再定义角色和状态，最后选择协作模型与框架。
 
-【2 分 30 秒】真实 StateGraph API 骨架可在安装兼容 LangGraph 的环境执行。先看独立 evidence 与 knowledge 字段，再看 START 分两支，最后列表形式的起点边等待双方完成。lambda 相当于返回状态更新的小处理器。固定字符串只展示机制，review 仅标记待人工，没有实际审查；这不是完整四角色实现。运行台完整版需要协调节点、合成数据工具、条件路由、审查与预算。没有 checkpointer 或 interrupt 配置，不具备生产断点恢复。请学员指出删掉等待汇合可能有什么风险，再到实际运行台核对图与事件。左右代码依次拼接即可运行，以下提供完整示例，依赖 LangGraph 1.2.11。
-
-```python
-from typing import TypedDict
-from langgraph.graph import StateGraph, START, END
-
-class DiagnosisState(TypedDict, total=False):
-    evidence: str
-    knowledge: str
-    approval: str
-
-evidence = lambda state: {"evidence": "E01"}
-knowledge = lambda state: {"knowledge": "K01"}
-review = lambda state: {"approval": "pending_human"}
-
-builder = StateGraph(DiagnosisState)
-builder.add_node("evidence", evidence)
-builder.add_node("knowledge", knowledge)
-builder.add_node("review", review)
-builder.add_edge(START, "evidence")
-builder.add_edge(START, "knowledge")
-builder.add_edge(["evidence", "knowledge"], "review")
-builder.add_edge("review", END)
-graph = builder.compile()
-for snapshot in graph.stream({}, stream_mode="values"):
-    print(snapshot)
-```
-
-来源：[LangGraph · Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
-
-## 42 · 扩展设计：未来如何替换为 LLM 决策
-
-综合实战与落地 · 1 分 40 秒
-
-【1 分 40 秒】替换点是角色决策函数，不是把所有代码交给模型。运行时仍验证工具、预算与权限，模型不能改写约束。真实 LLM 是未来设计扩展，当前没有模型适配器或 Ollama 运行模式，不能通过填配置直接开启。实现时应记录模型调用，配置失败明确报错，禁止静默回退还宣称真实调用。规则结果用于教学和编排回归。未来模型扩展还要测试格式错误、工具幻觉和无进展，多次运行观察波动。Ollama 链接仅供接口设计参考，不表示已集成。记录简短决策摘要、工具结果与版本，不要求展示完整内部思维。
-
-来源：[Ollama · Chat API](https://docs.ollama.com/api/chat)
-
-## 43 · HTTP 集成：Java、前端与客户端如何接入
-
-综合实战与落地 · 2 分 30 秒
-
-【2 分 30 秒】Java 负责认证、工单访问权、限流与幂等请求。模型密钥和工具凭据不发到浏览器或客户端。Python 返回结构化状态，不让前端猜中文是否代表完成。前端可轮询，也可另外设计 SSE 或 WebSocket；逐步播放事件不代表已有实时流。客户端不能把模型文本直接转成车端命令。审批绑定用户、run_id 与建议版本，避免批准旧内容却执行新内容。本页是架构契约，实际课堂请求路径以服务实现为准；没有生产审批恢复或真实车辆控制。请不同岗位各指出一项自己负责的校验。
-
-## 44 · 综合运行台：看清证据、反馈与停止
-
-综合实战与落地 · 5 分 50 秒
-
-【5 分 50 秒】前 50 秒核对 integrated、SYNTH-REMOTE-001 与规则模拟标签，并区分现场服务和录制回放。所有场景只使用规则决策与实际 LangGraph，没有真实 LLM 模式。选择 normal，花 1 分 40 秒看协调分派、证据、知识、审查和待人工确认。接着 50 秒选 conflict 或 missing：conflict 核对时间戳后解释差异；missing 经 read_supplemental 补齐电压后修订。先看中文故事线、角色图、当前已观察证据和修订前后，再展开事件 JSON、最终报告与状态。用 50 秒选 tool_failure，确认保留错误并以 needs_human 请求人工处理。再用 50 秒选 budget，确认 status=stopped，不伪造成功。最后 50 秒对比来源、场景、结束原因与建议。服务不可用时用对应回放，口头和界面同时标明回放，不称为实时 LLM 流。短演示按钮也复用此页；从短演示跳来只完成对应观察后返回，完整 5 分 50 秒安排在综合环节。本章此前 9 分 10 秒用于架构、代码、扩展边界与 HTTP，合计 15 分钟综合演示。通过检查不证明真实诊断正确或生产持久恢复。
-
-## 45 · 小组练习：等待客户端上传，再恢复任务
-
-综合实战与落地 · 4 分 10 秒
-
-【4 分 10 秒】50 秒个人思考、1 分 40 秒结对、50 秒展示、50 秒参考答案。这是新增需求，不能调用现有 read_supplemental 假装等待用户上传；当前 Demo 没有上传接口、持久暂停或恢复实现。无需新增上传 Agent，先用业务工作流落实。参考解：协调者或审查者发现缺电压，编排器持久保存 case_id、run_id、plan_version、observations、draft、review、missing、剩余预算、恢复节点、upload_request_id 与到期时间，状态 waiting_client_upload，然后结束本次请求。Java 服务发出补充请求，客户端显示要求并上传，业务服务校验工单权限、请求版本和内容，编排器只从待补充节点恢复，再审查报告。消息示例：{type: client_evidence_uploaded, case_id: SYNTH-REMOTE-001, run_id: run-demo, upload_request_id: upload-1, expected_plan_version: 2, message_id: msg-1, idempotency_key: upload-1-v1, evidence_refs: [upload-file-1]}。身份由登录会话确定，不信任消息自报角色；证据角色核对上传内容与采集时间，审查者只验收建议，不能代替客户上传或批准。参考验收：数据库唯一键和原子状态转换确保重复消息只恢复一次，返回原处理结果；旧 upload_request_id、旧版本或已结束任务的上传保留审计但不覆盖当前证据。崩溃重启读取持久检查点，保留预算，不重跑已完成步骤；超时、取消、越权或资料仍无效给出明确出口，超时和无法补齐转人工。普通状态表也可实现；选 LangGraph 时另配 checkpointer、thread_id 与 interrupt/resume，并验证重放幂等。
-
-## 46 · 交付检查清单：能解释，也能验证
-
-综合实战与落地 · 1 分 40 秒
-
-【1 分 40 秒】不要只展示正常路径，至少保存正常、证据异常、预算或工具失败三类样本。各岗位挑一项讲如何测试：后端查状态与权限，前端查引用与反馈，客户端查是否可能误触发实际操作。当前验收覆盖规则模拟与实际 LangGraph，不以此证明 LLM 能力。未来若扩展模型，须记录模型、提示词和版本并多次运行；一次成功不是稳定性证明。性能比较必须使用同场景、同运行来源。回到两项目标：能说明何时不需要 Agent，也能设计有独立产物、共享状态和出口的小系统。持久化、审批恢复和真实车端接入是后续独立工程，不由本次教学验收代替。
-
-## 47 · 参考资料：推理与协作模式
-
-综合实战与落地 · 50 秒
-
-【50 秒】零基础先读 Building effective agents 的工作流与 Agent 区别，再读 ReAct、Reflexion 摘要与核心图。规划示例帮助理解依赖，不必先追全部 API。研究系统文章属于特定经验，学习其分工、上下文和评估方法，不把效果数字套用到远程诊断。阅读时带着谁决定下一步、依据什么证据、何时停止三个问题。链接支持继续阅读，不表示课程复现了论文评测或作者生产系统。请学员根据自己最薄弱的一项选择一篇资料作为课后阅读。
-
-## 48 · 参考资料：框架与道通远程专家
-
-综合实战与落地 · 1 分 40 秒
-
-【1 分 40 秒】本章最后 4 分 10 秒用于总结与问答：检查清单 1 分 40 秒，推理资料导读 50 秒，本页 1 分 40 秒开放提问。先请两位学员各回答何时选单 Agent、如何设置终止，再回答一个迁移问题。工程人员先读 LangGraph overview 和 Graph API，需要恢复时再配置并测试 persistence 与 interrupts。AutoGen 信息以 2026-09-21 官方 README 核对为准，立项再查；MetaGPT 同时检查 releases 和依赖，不能仅凭 README 判断活跃度。道通远程专家官方页面提供客户与专家连接、远程诊断、编程、防盗、ADAS、咨询及 VIN、导入报告、发布订单的业务背景，并描述实时语音、文字、视频、电话沟通与服务、连接状态。官方 AI 智能匹配表述未披露 LLM 或多智能体实现。接单前资料初审与专家辅助为本课教学设计；合成 U0121、缺失电压与规则后端不代表厂商自主专家系统。
+来源：[LangGraph · Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)；[LangGraph · Interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)

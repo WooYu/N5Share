@@ -46,8 +46,13 @@ async function setup() {
     }
     await route.fulfill({json: JSON.parse(JSON.stringify(body))});
   });
-  const open = async number => {
-    await page.goto(base + '#' + number);
+  const open = async architecture => {
+    if (page.url() === 'about:blank') await page.goto(base);
+    await page.evaluate(number => {
+      const index = COURSE.findIndex(slide => slide.body.includes(`data-outing-architecture="${number}"`));
+      if (index < 0) throw new Error(`Missing architecture ${number}`);
+      showSlide(index);
+    }, architecture);
     await page.locator('.slide.active [data-outing-more]').click();
     await page.locator('.slide.active [data-outing-live]').click();
     await page.locator('[data-live-connection]').filter({hasText: 'test-model'}).waitFor();
@@ -64,10 +69,10 @@ async function setup() {
 test('opening another architecture shows its own empty view while the first run continues', async () => {
   const env = await setup();
   try {
-    await env.open(5);
+    await env.open(1);
     await env.start();
     await env.close();
-    await env.open(6);
+    await env.open(2);
     assert.match(await env.page.locator('[data-live-title]').innerText(), /② ReAct/);
     assert.equal(await env.page.locator('[data-live-events] button').count(), 0);
     assert.equal(await env.page.locator('[data-live-run]').isDisabled(), true);
@@ -85,10 +90,10 @@ test('late poll responses update only the originating architecture', async () =>
   const env = await setup();
   try {
     env.hold();
-    await env.open(5);
+    await env.open(1);
     await env.start();
     await env.close();
-    await env.open(7);
+    await env.open(3);
     env.jobs.get('run-1').status = 'completed';
     env.release();
     await env.page.waitForFunction(() => !document.querySelector('[data-live-run]').disabled);
@@ -96,7 +101,7 @@ test('late poll responses update only the originating architecture', async () =>
     assert.equal(await env.page.locator('[data-live-events] button').count(), 0);
     assert.equal(await env.page.locator('[data-live-export]').isDisabled(), true);
     await env.close();
-    await env.open(5);
+    await env.open(1);
     assert.match(await env.page.locator('[data-live-events]').innerText(), /stage-3/);
   } finally {env.release(); await env.page.close();}
 });
@@ -104,7 +109,7 @@ test('late poll responses update only the originating architecture', async () =>
 test('collaboration patterns and reruns keep configuration and event history separate', async () => {
   const env = await setup();
   try {
-    await env.open(8);
+    await env.open(4);
     env.jobs.clear();
     await env.start();
     env.jobs.get('run-1').status = 'completed';
@@ -126,7 +131,7 @@ test('collaboration patterns and reruns keep configuration and event history sep
 test('weather and budget changes open an empty scenario and preserve only its own history', async () => {
   const env = await setup();
   try {
-    await env.open(5);
+    await env.open(1);
     await env.start();
     env.jobs.get('run-1').status = 'completed';
     await env.page.waitForFunction(() => !document.querySelector('[data-live-run]').disabled);
@@ -135,7 +140,7 @@ test('weather and budget changes open an empty scenario and preserve only its ow
     await env.page.locator('.slide.active [data-outing-weather]').selectOption('sun');
     await env.page.locator('.slide.active [data-outing-budget]').selectOption('200');
     await env.page.locator('.slide.active [data-outing-close]').click();
-    await env.open(5);
+    await env.open(1);
     assert.match(await env.page.locator('[data-live-task]').innerText(), /晴天.*200 元/);
     assert.equal(await env.page.locator('[data-live-events] button').count(), 0);
     assert.equal(await env.page.locator('[data-live-export]').isDisabled(), true);
@@ -149,7 +154,7 @@ test('weather and budget changes open an empty scenario and preserve only its ow
     await env.page.locator('.slide.active [data-outing-weather]').selectOption('rain');
     await env.page.locator('.slide.active [data-outing-budget]').selectOption('300');
     await env.page.locator('.slide.active [data-outing-close]').click();
-    await env.open(5);
+    await env.open(1);
     assert.match(await env.page.locator('[data-live-detail]').innerText(), /run-1/);
   } finally {env.release(); await env.page.close();}
 });
@@ -158,7 +163,7 @@ test('a response for another configuration is not accepted into the current trac
   const env = await setup();
   try {
     env.hold();
-    await env.open(5);
+    await env.open(1);
     await env.start();
     env.jobs.get('run-1').config.stage = 4;
     env.jobs.get('run-1').events = [{phase: 'test', title: 'WRONG-DEMO', actor: 'test', detail: 'wrong configuration'}];
@@ -178,7 +183,7 @@ test('a late failed cancel request cannot overwrite the status of a rerun', asyn
       await new Promise(resolve => {releaseCancel = resolve;});
       await route.fulfill({status: 500, json: {error: 'OLD-CANCEL-ERROR'}});
     });
-    await env.open(5);
+    await env.open(1);
     await env.start();
     await env.page.locator('[data-live-cancel]').click();
     await env.page.waitForFunction(() => !document.querySelector('[data-live-run]').disabled);
@@ -193,8 +198,8 @@ test('a late failed cancel request cannot overwrite the status of a rerun', asyn
 test('new architectures start with their own stage, title and tradeoffs', async () => {
   const env = await setup();
   try {
-    for (const [page, stage, title] of [[9, 8, 'Router'], [10, 9, 'Blackboard'], [11, 10, 'Graph']]) {
-      await env.open(page);
+    for (const [architecture, stage, title] of [[5, 8, 'Router'], [6, 9, 'Blackboard'], [7, 10, 'Graph']]) {
+      await env.open(architecture);
       assert.ok((await env.page.locator('[data-live-title]').innerText()).includes(title));
       assert.ok((await env.page.locator('[data-live-tradeoffs]').innerText()).includes(title));
       assert.equal(await env.page.locator('[data-live-pattern-row]').isVisible(), false);
@@ -211,7 +216,7 @@ test('new architectures start with their own stage, title and tradeoffs', async 
 test('router intent is sent to the backend and owns a separate session', async () => {
   const env = await setup();
   try {
-    await env.open(9);
+    await env.open(5);
     await env.start();
     assert.equal(env.starts[0].intent, 'outing');
     env.jobs.get('run-1').status = 'completed';

@@ -1,4 +1,4 @@
-"""DeepSeek official API backup and explicit per-run provider selection."""
+"""DeepSeek primary, with the existing Codex client as an explicit backup."""
 import asyncio
 import json
 import time
@@ -14,20 +14,21 @@ class DeepSeekModel:
         try:
             self._key = api_key or load_deepseek_key()
         except (OSError, ValueError):
-            raise ModelUnavailable('无法解密本机 DeepSeek 备用凭据。') from None
+            raise ModelUnavailable('无法解密本机 DeepSeek 凭据。') from None
         if not self._key:
-            raise ModelUnavailable('尚未配置 DeepSeek 备用凭据。')
+            raise ModelUnavailable('尚未配置 DeepSeek 凭据。')
         self._transport = transport
         self.timeout = 90
         self.metadata = {'provider': 'DeepSeek', 'model': 'deepseek-flash', 'transport': 'deepseek-api',
                          'protocol': 'structured-action', 'credential_source': '本机受保护凭据或环境变量'}
 
-    async def _request(self, instruction, context, cancel):
+    async def _request(self, instruction, context, cancel, schema=None):
         example = {'summary': '简短决策摘要', 'calls': [], 'plan': [], 'reflection': '', 'next_actor': '', 'result': None}
         system = ('你是课堂模型。仅返回符合下列 schema 的 JSON 对象，必须包含全部字段。'
                   '使用简体中文，summary 不超过120字，只提供简短决策摘要，不输出内部思维过程。'
-                  'calls 是交给宿主执行的工具请求，不得伪造实际观察。未使用的数组为空、字符串为空、result为null。'
-                  'JSON示例：' + json.dumps(example, ensure_ascii=False) + '\nJSON schema：' + json.dumps(STEP_SCHEMA, ensure_ascii=False))
+                  + ('calls 是交给宿主执行的工具请求，不得伪造实际观察。未使用的数组为空、字符串为空、result为null。' if schema is None else '严格按schema字段与枚举返回，不添加其他字段；不得伪造工具观察。')
+                  + ('JSON示例：' + json.dumps(example, ensure_ascii=False) if schema is None else '')
+                  + '\nJSON schema：' + json.dumps(schema or STEP_SCHEMA, ensure_ascii=False))
         payload = {'model': self.metadata['model'], 'stream': False, 'max_tokens': 2500,
                    'thinking': {'type': 'disabled'}, 'response_format': {'type': 'json_object'},
                    'messages': [{'role': 'system', 'content': system},
@@ -68,12 +69,17 @@ class DeepSeekModel:
                 raise ValueError('Invalid usage')
         except (ValueError, KeyError, TypeError, IndexError):
             raise ModelError('DeepSeek 返回的 JSON 不完整或格式无效，未执行该轮工具。') from None
-        return check_step(answer), counts
+        return (check_step(answer) if schema is None else answer), counts
 
     def generate(self, instruction, context, cancel):
         if cancel.is_set():
             raise ModelCancelled('已停止 DeepSeek 请求。')
         return asyncio.run(self._request(instruction, context, cancel))
+
+    def generate_json(self, instruction, context, cancel, schema):
+        if cancel.is_set():
+            raise ModelCancelled('已停止 DeepSeek 请求。')
+        return asyncio.run(self._request(instruction, context, cancel, schema=schema))
 
 
 class ModelRouter:
@@ -106,14 +112,17 @@ class ModelRouter:
     def generate(self, instruction, context, cancel):
         return self.active.generate(instruction, context, cancel)
 
+    def generate_json(self, instruction, context, cancel, schema):
+        return self.active.generate_json(instruction, context, cancel, schema)
+
 
 def create_model():
     try:
-        backup = DeepSeekModel()
-    except ModelUnavailable:
+        backup = CodexModel()
+    except ModelError:
         backup = None
     try:
-        return ModelRouter(CodexModel(), backup)
+        return ModelRouter(DeepSeekModel(), backup)
     except ModelError as error:
         if backup:
             return ModelRouter(backup, startup_reason=str(error))

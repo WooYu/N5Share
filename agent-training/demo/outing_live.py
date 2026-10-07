@@ -1,4 +1,4 @@
-"""Seven real-model teaching stages with read-only tools and inspectable state."""
+"""Real-model architecture demos with read-only tools and inspectable state."""
 import copy
 import json
 import threading
@@ -21,11 +21,17 @@ DOCUMENTS = [
 
 
 def validate_payload(payload):
-    if not isinstance(payload, dict) or 'stage' not in payload or set(payload) - {'stage', 'weather', 'budget', 'pattern'}:
-        raise ValueError('仅接受 stage、weather、budget、pattern。')
+    if not isinstance(payload, dict) or 'stage' not in payload or set(payload) - {'stage', 'weather', 'budget', 'pattern', 'intent'}:
+        raise ValueError('仅接受 stage、weather、budget、pattern、intent。')
     result = {'weather': 'rain', 'budget': 300, 'pattern': 'supervisor', **payload}
-    if type(result['stage']) is not int or result['stage'] not in range(1, 8):
-        raise ValueError('stage 必须为 1–7 的整数。')
+    if type(result['stage']) is not int or result['stage'] not in range(1, 11):
+        raise ValueError('stage 必须为 1–10 的整数。')
+    if result['stage'] == 8:
+        result.setdefault('intent', 'outing')
+        if result['intent'] not in ['outing', 'budget', 'unclear']:
+            raise ValueError('请选择出游、费用或待澄清需求。')
+    elif 'intent' in result:
+        raise ValueError('只有 Router + Skill 接受 intent。')
     if result['weather'] not in ['rain', 'sun'] or type(result['budget']) is not int or result['budget'] not in [100, 200, 300]:
         raise ValueError('请选择晴天或雨天，以及 100、200、300 元预算。')
     if result['pattern'] not in ['supervisor', 'hierarchical', 'swarm']:
@@ -145,7 +151,7 @@ class OutingRun:
                 if not hasattr(self.model, 'activate_fallback') or not self.model.activate_fallback():
                     raise
                 self.trace['model'] = self.model.metadata
-                self.event('模型切换', '已切换 DeepSeek 备用模型', str(error) + ' 已保留当前计划和工具证据，后续使用备用模型。', 'host', self.model.metadata)
+                self.event('模型切换', '已切换备用模型：' + self.model.metadata.get('provider', '已配置供应商'), str(error) + ' 已保留当前计划和工具证据，后续使用备用模型。', 'host', self.model.metadata)
         self.check()
         answer = check_step(answer)
         for key in ['input_tokens', 'output_tokens']:
@@ -155,11 +161,20 @@ class OutingRun:
 
     def context(self):
         return {'task': self.task, 'rules': DOCUMENTS[:2],
+                'retrieved_documents': self.trace['shared_state'].get('retrieved_documents', []),
                 'plan_version': self.trace['shared_state']['plan_version'],
                 'plan': self.trace['shared_state']['plan'],
                 'reflection': self.trace['shared_state']['reflection'],
                 'observations': self.tools.observations,
                 'allowed_tools': ['read_weather()', 'read_catalog()', 'calculate_cost(place_id=P01/P02/P03)']}
+
+    def retrieve(self, query):
+        self.event('Retrieval / 检索请求', 'RAG：查询本地资料库', query, 'retriever', {'query': query})
+        documents = [d for d in DOCUMENTS if any(term in query for term in d['keywords'])]
+        self.trace['shared_state']['retrieved_documents'] = copy.deepcopy(documents)
+        self.event('Retrieval / 检索结果', 'RAG：命中文档进入模型上下文',
+                   '\n'.join(f'{d["id"]}：{d["text"]}' for d in documents), 'retriever', documents)
+        return documents
 
     def execute(self, calls, actor='agent', allowed=None):
         outputs = []
@@ -192,20 +207,34 @@ class OutingRun:
 
     def loop(self, single_batch=False):
         feedback = []
+        react = self.payload['stage'] == 4
+        executor = self.payload['stage'] in [5, 6]
+        actor = 'executor' if executor else 'agent'
+        if executor:
+            self.event('Execute / 执行计划', f'Executor 接收计划 v{self.trace["shared_state"]["plan_version"]}',
+                       '\n'.join(self.trace['shared_state']['plan']), actor)
         while True:
             context = self.context()
             context['validation_feedback'] = feedback
             instruction = ('只根据实际 observations 决定下一步。缺证据时在 calls 中提出工具请求，result=null。'
                            '有足够证据后返回 result：recommended 或 no_solution。费用必须三项齐全，必须实际调用 calculate_cost。'
                            '最终 citations 必须包含 WX01、D01、D02 和相关场馆 Pxx；无解必须核算并引用所有天气适配候选。'
-                           '已经读到的相同资料不要重复读。最多一次请求5个工具。')
+                           '已经读到的相同资料不要重复读。')
+            if react:
+                instruction += '本页为ReAct：每轮最多提出一个工具请求，等待实际观察后再选择下一步，不可一次批量取齐。'
+            else:
+                instruction += '最多一次请求5个工具。'
+            if executor:
+                instruction += '你是执行器，按已提供plan的依赖执行，复用有效observations；最终检查plan中的验收条件。'
             if single_batch and not self.tools.observations:
-                instruction += '本页是一次批量工具调用：本轮一次提出天气、目录、P01/P02/P03成本共5个请求，然后依据返回回答。'
-            answer = self.ask(instruction, context)
+                instruction += '本页是一次批量工具调用：本轮一次提出天气、场馆名单、P01/P02/P03成本共5个请求，然后依据返回回答。'
+            answer = self.ask(instruction, context, actor)
             if answer['calls']:
+                if react and len(answer['calls']) > 1:
+                    raise ModelError('ReAct每轮只允许一个工具请求；未执行批量行动，请重新运行。')
                 if single_batch and self.tools.observations:
                     raise StopRun('工具调用页只展示一批调用；继续根据观察行动请使用 ReAct 页。')
-                self.execute(answer['calls'])
+                self.execute(answer['calls'], actor)
             elif self.accept(answer):
                 return
             else:
@@ -214,9 +243,17 @@ class OutingRun:
     def plan(self, reflection=False):
         context = self.context()
         if reflection:
+            self.event('Execute / 首次执行', '采集计划 v1 的实际证据',
+                       '读取天气、场馆名单和公园完整费用，再验收教学错误草稿。', 'executor')
+            self.execute([{'name': 'read_weather', 'place_id': ''}, {'name': 'read_catalog', 'place_id': ''},
+                          {'name': 'calculate_cost', 'place_id': 'P01'}], 'executor')
+            context = self.context()
             draft = {'status': 'recommended', 'place_id': 'P01', 'total': 100, 'citations': [], 'text': '公园费用100元'}
             self.event('教学注入', '故意提供错误执行草稿', '漏算餐费且未核对天气；此错误由讲师样本注入，并非宣称模型刚刚犯错。', 'teacher', draft)
-            context.update(failed_draft=draft, feedback=validate_result(draft, self.tools))
+            feedback = validate_result(draft, self.tools)
+            self.trace['shared_state']['draft'] = draft
+            self.event('程序验收 / 计划v1', '教学草稿未通过验收', '；'.join(feedback), 'validator', feedback)
+            context.update(failed_draft=draft, feedback=feedback)
             instruction = '根据失败草稿和验收反馈，输出可执行的 reflection 与修订后的 plan。不要调用工具，不要给最终结果。计划至少2步，保留有效证据。'
         else:
             instruction = '先规划再执行：输出至少2步的 plan，写明依赖与验收条件。现在不要调用工具或给结论，calls=[]，result=null。'
@@ -289,6 +326,17 @@ class OutingRun:
                     raise ModelError('组长返回了不属于本组的分派。')
                 self.event('层次化分派', f'supervisor → {sender} → {actor}', lead['summary'], sender)
             next_actor = self.worker(actor, sender if pattern != 'swarm' else 'handoff')
+            if pattern == 'hierarchical':
+                child = self.trace['shared_state']['role_results'][actor]
+                report = self.ask('你是组长。只根据本组child_message汇总，保留预算、来源与限制，不读取另一组上下文。'
+                                  '把交付内容放在summary，calls=[]，result=null，next_actor=""。',
+                                  {'task': self.task, 'leader': sender, 'child_message': child,
+                                   'budget': self.payload['budget']}, sender)
+                if report['calls'] or report['result'] is not None:
+                    raise ModelError('组长汇总只能交付摘要，不能执行工具或越过总主管生成结论。')
+                message = {**child, 'from': sender, 'to': 'supervisor', 'summary': report['summary']}
+                self.trace['shared_state']['messages'].append(message)
+                self.event('Message / 组长汇总', f'{sender} → supervisor', report['summary'], sender, message)
             if pattern == 'swarm':
                 expected = order[1] if position == 0 else 'summary'
                 if next_actor != expected:
@@ -298,10 +346,146 @@ class OutingRun:
         context = self.context()
         context['messages'] = self.trace['shared_state']['messages']
         if pattern == 'hierarchical':
-            self.event('层次化汇总', '组长将子角色产物交回总主管', '天气组与预算组保留各自来源，统一进入总主管验收。', 'host')
+            context['messages'] = [message for message in context['messages'] if message['to'] == 'supervisor']
+            self.event('层次化汇总', '总主管收到两份实际组长汇报', '组长分别调用模型汇总，保留子角色来源与预算，进入统一验收。', 'host', context['messages'])
         answer = self.ask('你是汇总角色。根据实际证据与两份角色消息生成最终 result。calls=[]。核对天气和完整费用；引用WX01、D01、D02及相关Pxx。无解时引用所有天气适配候选。不要新增资料。', context, 'summary')
         if answer['calls'] or not self.accept(answer):
             raise ModelError('汇总结果未通过程序验收，请查看已保留的反馈。')
+
+    def prescribed_calls(self, calls, context, actor):
+        """A skill or ready role bounds the work; the model proposes the calls."""
+        context = {**context, 'required_calls': calls}
+        answer = self.ask('按本技能或角色的流程，在 calls 中返回 required_calls，顺序和参数须一致。'
+                          '这些是待执行请求，不要编造结果；result=null。', context, actor)
+        if answer['calls'] != calls or answer['result'] is not None:
+            raise ModelError(f'{actor} 的请求不符合当前流程或角色边界。')
+        return self.execute(answer['calls'], actor, {call['name'] for call in calls})
+
+    def grounded_answer(self, context, actor='summary', complete=True):
+        answer = self.ask('只根据实际 observations 生成最终 result，calls=[]。'
+                          '天气适配、费用三项齐全、预算内才推荐；无解需核算全部天气适配候选。'
+                          'citations 包含 WX01、D01、D02 与所选场馆；无解引用所有适配候选。', context, actor)
+        if answer['calls'] or validate_result(answer['result'], self.tools):
+            if not answer['calls']:
+                self.accept(answer)
+            raise ModelError('模型结果未通过程序验收，请查看反馈。')
+        if complete:
+            self.accept(answer)
+        return answer['result']
+
+    def router_skill(self):
+        intent = self.payload['intent']
+        requests = {'outing': '帮我安排周六半日出游', 'budget': '只核算三个场馆的完整费用', 'unclear': '帮我看看'}
+        request = requests[intent]
+        matches = [skill for word, skill in [('出游', 'outing_plan'), ('费用', 'budget_check')] if word in request]
+        self.event('输入 Input', '用户意图', request, 'host')
+        self.event('路由 Router', '关键词路由，与离线示意相同', '命中：' + ('、'.join(matches) or '无'), 'router')
+        if len(matches) != 1:
+            answer = self.ask('需求不明确，只在 summary 中询问要安排出游还是只核算费用；不加载技能，calls=[]，result=null。',
+                              {'task': request, 'intent': intent}, 'router')
+            if answer['calls'] or answer['result'] is not None:
+                raise ModelError('澄清阶段不能执行工具或给出建议。')
+            result = {'status': 'needs_clarification', 'text': answer['summary']}
+            self.trace.update(status='completed', result=result)
+            self.event('澄清 Clarify', '意图不足，先澄清', answer['summary'], 'router', result)
+            return
+        skill = matches[0]
+        rules = DOCUMENTS[:2] if skill == 'outing_plan' else DOCUMENTS[1:2]
+        self.trace['shared_state'].update(skill=skill, retrieved_documents=copy.deepcopy(rules))
+        self.event('加载 Skill', '按需加载 ' + skill, 'Reference：' + '、'.join(d['id'] for d in rules), 'router', rules)
+        calls = ([{'name': 'read_weather', 'place_id': ''}] if skill == 'outing_plan' else [])
+        calls += [{'name': 'read_catalog', 'place_id': ''}] + [{'name': 'calculate_cost', 'place_id': key} for key in PLACES]
+        context = {'task': self.task, 'user_request': request, 'intent': intent, 'skill': skill,
+                   'rules': rules, 'observations': {}, 'allowed_tools': sorted({c['name'] for c in calls})}
+        self.prescribed_calls(calls, context, 'skill_executor')
+        context['observations'] = self.tools.observations
+        if skill == 'outing_plan':
+            self.grounded_answer(context, 'skill_executor')
+        else:
+            answer = self.ask('只根据 observations 交付费用 summary；未查天气，不能给出出游建议。calls=[]，result=null。', context, 'skill_executor')
+            if answer['calls'] or answer['result'] is not None:
+                raise ModelError('费用技能只能交付费用摘要，不能越界推荐出游。')
+            costs = {key: self.tools.observations['COST:' + key]['total'] for key in PLACES}
+            self.trace['shared_state']['costs'] = costs
+            text = '；'.join(f'{PLACES[key]["name"]}：{total} 元，{"预算内" if total <= self.tools.budget else "超预算"}' for key, total in costs.items())
+            result = {'status': 'cost_checked', 'text': text + '。未查天气，不作出行建议。', 'costs': costs, 'citations': ['D02', *PLACES]}
+            self.trace.update(status='completed', verified=True, result=result)
+            self.event('结果 Result', '程序核算费用，模型交付摘要', result['text'], 'host', result)
+
+    def blackboard(self):
+        state = self.trace['shared_state']
+        board = {'version': 0, 'weather': None, 'catalog': None, 'costs': None, 'result': None}
+        state['board'] = board
+        self.event('初始化 Blackboard', '黑板 v0', '版本、缺失字段与就绪条件；当前串行调度。', 'host', copy.deepcopy(board))
+        roles = [
+            ('summary', lambda: board['weather'] and board['catalog'] and board['costs']),
+            ('cost', lambda: board['catalog'] and not board['costs']),
+            ('weather', lambda: not board['weather']),
+            ('catalog', lambda: not board['catalog']),
+        ]
+        completed = set()
+        while board['result'] is None:
+            self.check()
+            actor = next((name for name, ready in roles if name not in completed and ready()), None)
+            if not actor:
+                raise StopRun('没有就绪角色，保留黑板并请求补充证据。')
+            self.event('触发 Trigger', '状态变化唤醒 ' + actor, f'检查黑板 v{board["version"]} 的依赖；完成角色不重复触发。', actor, copy.deepcopy(board))
+            if actor == 'summary':
+                result = self.grounded_answer({**self.context(), 'board': board, 'role': actor}, complete=False)
+                board['result'] = result['place_id'] if result['status'] == 'recommended' else 'no_solution'
+            else:
+                calls = ([{'name': 'read_weather', 'place_id': ''}] if actor == 'weather' else
+                         [{'name': 'read_catalog', 'place_id': ''}] if actor == 'catalog' else
+                         [{'name': 'calculate_cost', 'place_id': p['id']} for p in board['catalog']])
+                # Each role receives only the evidence needed for its readiness dependency.
+                local_board = {'version': board['version']}
+                if actor == 'cost':
+                    local_board['catalog'] = board['catalog']
+                local_observations = {'CAT01': self.tools.observations['CAT01']} if actor == 'cost' else {}
+                rules = DOCUMENTS[:1] if actor == 'weather' else DOCUMENTS[1:2] if actor == 'cost' else []
+                outputs = self.prescribed_calls(calls, {'task': self.task, 'role': actor, 'board': local_board,
+                                                       'rules': rules, 'observations': local_observations}, actor)
+                if actor == 'weather':
+                    board['weather'] = outputs[0]['weather']
+                elif actor == 'catalog':
+                    board['catalog'] = outputs[0]['places']
+                else:
+                    board['costs'] = {value['place_id']: value['total'] for value in outputs}
+            board['version'] += 1
+            completed.add(actor)
+            self.event('发布 Publish', f'{actor} 写入黑板 v{board["version"]}', '保留证据来源，再检查下一角色的就绪条件。', actor, copy.deepcopy(board))
+        self.accept({'result': result})
+
+    def graph(self):
+        self.event('图 Graph', '预先定义节点、边与出口', '节点由代码执行；模型只在结果节点基于证据生成回答。', 'host')
+        candidates, affordable = [], []
+        node = 'weather'
+        while node != 'END':
+            self.check()
+            if node == 'weather':
+                self.execute([{'name': 'read_weather', 'place_id': ''}], 'weather')
+                next_node = 'catalog'
+            elif node == 'catalog':
+                self.execute([{'name': 'read_catalog', 'place_id': ''}], 'catalog')
+                next_node = 'indoor_filter' if self.tools.observations['WX01']['weather'] == 'rain' else 'all_places'
+            elif node in ['indoor_filter', 'all_places']:
+                candidates = [p for p in self.tools.observations['CAT01']['places'] if node == 'all_places' or p['indoor']]
+                next_node = 'cost'
+            elif node == 'cost':
+                outputs = self.execute([{'name': 'calculate_cost', 'place_id': p['id']} for p in candidates], 'cost')
+                affordable = [v['place_id'] for v in outputs if v['total'] <= self.tools.budget]
+                next_node = 'validate'
+            elif node == 'validate':
+                next_node = 'recommend' if affordable else 'no_solution'
+            else:
+                result = self.grounded_answer({**self.context(), 'node': node, 'candidates': candidates, 'affordable': affordable}, complete=False)
+                if (result['status'] == 'recommended') != bool(affordable):
+                    raise ModelError('结果与图的出口不一致。')
+                next_node = 'END'
+            self.event('节点 Node', f'{node} → {next_node}', '显式条件边决定下一节点，新增路径需修改图。', 'host', {'node': node, 'next': next_node})
+            node = next_node
+        self.event('结束 END', '图到达结束节点', '本图未配置检查点恢复。', 'host')
+        self.accept({'result': result})
 
     def run(self):
         try:
@@ -309,22 +493,45 @@ class OutingRun:
             stage = self.payload['stage']
             self.event('Goal / 目标', '真实模型，同一出游任务', self.task, 'host')
             if getattr(self.model, 'startup_fallback_reason', None):
-                self.event('模型切换', '主模型不可用，使用 DeepSeek 备用', self.model.startup_fallback_reason, 'host', self.model.metadata)
+                self.event('模型切换', '主配置不可用，使用 ' + self.model.metadata.get('provider', '已配置供应商') + ' 备用', self.model.startup_fallback_reason, 'host', self.model.metadata)
             if stage in [1, 2]:
                 context = {'task': self.task}
                 if stage == 2:
                     query = '出游 预算 天气'
-                    documents = [d for d in DOCUMENTS if any(term in query for term in d['keywords'])]
+                    documents = self.retrieve(query)
                     context['retrieved_documents'] = documents
-                    self.event('Retrieval / 检索', '本地关键词检索命中资料', '\n'.join(f'{d["id"]}：{d["text"]}' for d in documents), 'retriever', documents)
-                answer = self.ask('根据已提供的内容给出简短建议，放在summary。没有实际天气和报价时明确待核实，不能声称已调用工具。calls=[]，result=null。若有检索资料，引用D01、D02。', context)
+                instruction = ('根据已提供的内容给出简短建议，放在summary。没有实际天气和报价时明确待核实，'
+                               '不能声称已调用工具。calls=[]。')
+                if stage == 2:
+                    instruction += ('同时返回 status=pending 的 result：place_id=""、total=0，text 写完整回答，'
+                                    'citations 只填写实际命中的 D01、D02。')
+                else:
+                    instruction += 'result=null。'
+                answer = self.ask(instruction, context)
                 if answer['calls']:
                     raise ModelError('本阶段尚未开放工具。')
-                self.trace.update(status='completed', result={'text': answer['summary'], 'status': 'unverified'})
-                self.event('模型回答', '尚未做事实验收', answer['summary'], 'agent')
+                if stage == 2:
+                    result = answer.get('result')
+                    expected_citations = {document['id'] for document in documents}
+                    if (not result or result['status'] != 'pending' or result['place_id'] or result['total'] != 0
+                            or set(result['citations']) != expected_citations):
+                        raise ModelError('RAG 回答未返回与检索结果一致的待核实引用。')
+                    self.trace.update(status='completed', result=result)
+                    self.event('RAG / 增强回答', '检索后生成，尚未做事实验收', result['text'], 'agent', result)
+                else:
+                    self.trace.update(status='completed', result={'text': answer['summary'], 'status': 'unverified'})
+                    self.event('模型回答', '尚未做事实验收', answer['summary'], 'agent')
             elif stage == 7:
                 self.multi()
+            elif stage == 8:
+                self.router_skill()
+            elif stage == 9:
+                self.blackboard()
+            elif stage == 10:
+                self.graph()
             else:
+                if stage == 3:
+                    self.retrieve(self.task)
                 if stage in [5, 6]:
                     self.plan()
                 if stage == 6:

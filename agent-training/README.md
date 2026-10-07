@@ -1,14 +1,64 @@
 # 高级推理框架与多 Agent 协作 · 培训包
 
-48 页、90 分钟，面向 Java 后端、前端、客户端开发者。学习顺序是“学习路线 → 周末出游的七阶段能力演进 → 多 Agent 流程概念 → 多 Agent 设计方法 → 协作模型与实现 → 远程专家案例演示”。前 17 页建立能力基础；第 18 页以后沿用一条连续主线，从运行生命周期逐步进入任务依赖、角色接口、消息与状态、协作模型和综合案例。逐页和逐章以整秒计算，合计 90 分钟。
+首次从 Git 克隆后，安装 requirements.txt 并运行 `python build.py` 生成课件。打开 [index.html](index.html) 讲课；用 VS Code 打开当前目录，按 F5 运行真实协作代码。文件位置见 [目录说明](docs/directory-guide.md)，提交范围见 [Git 文件管理](docs/git-management.md)。
 
-七章用时：开场与目标 2 分 30 秒；Agent 基础 2 分 30 秒；能力演进 17 分 50 秒；多 Agent 流程概念 14 分 40 秒；多 Agent 设计方法 19 分 40 秒；协作模型与实现 14 分钟；案例演示与复盘 18 分 50 秒。
+| 目录 | 内容 |
+| --- | --- |
+| `demo/` | 可运行演示与模型连接；主线在 `collaboration_live/`，旧规则源码在 `reference/` |
+| `course/` | 课程内容、图形、分页与讲稿生成源码 |
+| `web/` | HTML 模板、样式、浏览器脚本 |
+| `docs/` | 大纲、讲师讲稿、演示指南、来源与设计说明 |
+| `tests/` | Python、JavaScript 与浏览器回归检查 |
+| `tools/` | 打包及交付验证工具 |
+| `assets/` | 导入资料、参考图与 PDF |
+| `config/` | 可提交的配置模板 |
+| `dist/` | 可分发演示包 |
+| `archive/` | 可提交的历史输入快照；本机工作记录与旧生成示例另行忽略 |
+| `test-results/` | 本机检查日志与截图 |
 
-入口：[演示稿](index.html) · [大纲](outline.md) · [讲师讲稿](speaker-notes.md) · [选型与设计卡](design-card.md) · [来源](sources.md)。
+课程共 39 页、90 分 07 秒，面向 Java 后端、前端和客户端开发者。第 2 页是大纲；第 3 至 12 页用出游案例比较七种架构；第 13 至 21 页介绍五种协作模式，并在 VS Code 中运行；第 22 至 24 页介绍 MAF、LangGraph、MetaGPT；第 25 至 32 页实现 Review Agent，运行评审、修复和复审；第 33 至 39 页讨论 A2A / MCP、安全和工程问题。诊断案例作为课后参考。
+
+## 第 25 至 32 页：MetaGPT 开发团队与 Review Agent
+
+用十五分钟运行一次任务看板的评审与修复。首轮 PR 由讲师提供，包含可复现的缺陷；Reviewer 调用模型评审，开发角色根据意见和实际测试失败修复代码，再重新评审、测试并等待人工批准。看板包含前端、HTTP 接口、SQLite 和固定测试。讲解时对照角色产物、输入契约和工具结果。
+
+VS Code 选择“开发团队 · Review 与修复”按 F5。使用独立 `.venv-metagpt` Python 3.11 和 MetaGPT 0.8.2 环境；模型沿用现有网关。重试限制、版本失效与人工审批由代码保证。完整准备、断点、运行、审批和看板命令见 [实战演示手卡](docs/dev-team-demo-guide.md)，设计见 [开发设计](docs/dev-team-design.md)。
+
+已用真实模型跑通 Review → 修复 → 复审，原产物保留待人工批准；独立进程审批与浏览器看板也已在副本上验证。实际模型、产物和验证范围见 [实战验证记录](docs/dev-team-verification-2026-10-08.md)。
+
+框架介绍共 18 分钟，包含官方指南与示例的讲解时间。各章详细时间见 [大纲](docs/outline.md)，总计 90 分 07 秒。
+
+## 第 22 至 24 页：三种框架介绍
+
+三页分别介绍 Microsoft Agent Framework、LangGraph、MetaGPT 的能力、适用场景和官方示例。图片保存在本地，可离线查看原图；来源见 [来源说明](assets/frameworks/SOURCES.md)。集成指南和使用示例链接到官方资料，本地 LangGraph 五模式代码也可直接运行。备课见 [框架演示手卡](docs/framework-demo-guide.md)。第 25 页开始开发团队实战。
+
+历史内容见[迁移前课件](archive/2026-10-07-before-collaboration-import/index.html)和[移出页数据](archive/2026-10-07-before-collaboration-import/removed-slides.json)。导入资料的本地副本在 [assets/imported/multi-agent-source.html](assets/imported/multi-agent-source.html#sec02)，构建可直接读取。分页、样式和交互分别维护在 course/collaboration_import.py、web/collaboration-import.css、web/collaboration-import.js。跨页代码支持复制完整原示例，工程问题可用鼠标或键盘展开；原文中的 FAQ 留在资料副本中。
+
+第 13 页用五组矢量图比较协作模式，图形维护在 course/collaboration_visuals.py，文案修订在 course/collaboration_corrections.py。图中 Swarm 按需交接，Network 的全连接只是一个例子，顺序链的外层固定顺序与节点内部重试分别说明。模式可以组合，调用开销和容错需结合实际配置判断。页脚参考链接维护在 course/collaboration_references.py。
+
+入口：[演示稿](index.html) · [大纲](docs/outline.md) · [讲师讲稿](docs/speaker-notes.md) · [选型与设计卡](docs/design-card.md) · [来源](docs/sources.md)。
+
+协议内容位于第 33 至 34 页：第 33 页为 A2A / MCP 总览，第 34 页并列展示 A2A 核心概念、MCP 三种能力及总结。
+
+## 第 14 至 21 页：五种协作模式 VS Code 真实演示
+
+第 14 页定义共同任务，第 15 页对照五种模式，第 16 页介绍 AG2 Playground，第 17 至 21 页依次讲顺序链、主管、层次化、Swarm 与 Network 的代码示例。培训时打开 VS Code 展示完整源码并运行，终端逐节点显示真实模型请求、工具结果、控制权转移、状态和验收结果。
+
+五种模式由 LangGraph 调度，模型参与角色判断与动态路由：固定边、主管动态调度、编译后的团队子图、角色 handoff、对等节点路由。投影页由 course/collaboration_vscode.py 生成，源码节选来自 demo/collaboration_live；场馆资料是固定课堂数据。原规则回放保留为历史参考，不作为本章演示入口。
+
+DeepSeek 为主配置，连接异常时明确切换现有 OpenAI/Codex 备用，并保留证据。normal / missing 分别展示完整资料和首次漏餐费。每次执行保存 JSON 轨迹和 Markdown 报告，可据此查看模型实际选择的路径。
+
+将 [独立演示包](dist/collaboration-demo.zip) 解压后安装 requirements.txt、配置模型，再用 VS Code 打开整个文件夹，选“真实协作”配置按 F5。Windows 启动脚本使用本地虚拟环境。详细准备、断点和课堂节奏见 [演示指南](docs/collaboration-demo-guide.md)。当前目录可运行：
+
+```powershell
+.\.venv\Scripts\python.exe demo/run_collaboration.py --pattern supervisor --scenario missing --step
+```
+
+输出在 demo/output/collaboration-live。AG2 Playground 可选用 3 至 5 分钟对照一种机制，无需重复五种模式。维护后执行 `python tools/package_collaboration.py` 更新独立 ZIP；`python tools/verify_collaboration_package.py` 验证解压后的真实图与工具（测试替换外部模型响应，不收费）。
 
 ## 离线演示
 
-直接用 Chrome 或 Edge 打开 index.html，无需前端依赖或 CDN。支持翻页、目录、讲师备注、七个能力阶段互动演示及诊断运行台的 25 份预录轨迹。HTML 内没有 API Key。
+直接用 Chrome 或 Edge 打开 index.html，无需前端依赖或 CDN。支持翻页、目录、讲师备注和七种架构互动示意；五种协作模式切到 VS Code 真实执行。HTML 内没有 API Key。
 
 | 操作 | 快捷键 |
 | --- | --- |
@@ -19,23 +69,31 @@
 | 关闭弹窗 | Esc |
 | 打印讲义 | Ctrl+P，横向，开启背景图形 |
 
-页面保持 16:9 投影布局；窄屏整体缩放，推荐桌面演示。讲师备注弹窗与投影共屏，私有备课请在另一设备打开 speaker-notes.md。
+页面保持 16:9 投影布局；窄屏整体缩放，推荐桌面演示。讲师备注弹窗与投影共屏，私有备课请在另一设备打开 docs/speaker-notes.md。
 
-## 先理解基础与能力演进
+## 七种架构的出游演示
 
-前 3 页建立目标、时间安排与学习路线；第 04–17 页用简单的“周末出游”任务逐步增加能力，按“概念图 → 对应演示”排列。概念页为 04、06、08、10、12、14、16，演示页为紧接的奇数页。七个互动演示共用晴天/雨天与 300/200/100 元预算选项，便于在相同条件下观察每个阶段增加了什么。
+第 3 至 5 页介绍七种架构，第 6 至 12 页按①至⑦演示。①包含模型、检索和工具，③加入反馈修订，⑤按需求选择技能，⑥等待共享资料齐备，⑦沿节点和条件边执行。这些方式可以组合。点击“开始演示 / 下一步”查看节点和信息流，“上一步”回看，“重播”恢复起点；底部列出优势、局限和适用场景。“更多”中可改天气、预算、需求，也可查看记录或打开真实模型入口。
 
-| 阶段 | 出游任务中的观察重点 |
+架构文案、图形、演示图分别维护在 course/architecture_reference.py、course/architecture_diagrams.py、course/architecture_visuals.py，讲稿在 course/outing_content.py，步骤映射在 web/outing.js。图形内嵌到 HTML，离线可用。三页 PDF 见 [架构信息图](assets/figures/architecture-infographics.pdf)。
+
+出游演示页与真实模型窗口均展示优势、局限和本例观察点；真实模型窗口切换 Supervisor、层次化或 Swarm 时同步更新。说明用于评估机制取舍，不把规则仿真的耗时当成真实模型性能结论。
+
+| 页面与架构 | 出游任务中的观察重点 |
 | --- | --- |
-| LLM · 大语言模型 | 根据需求生成行程建议 |
-| RAG · 检索增强生成 | 先检索本地景点资料，再参考资料回答 |
-| Tool Calling · 工具调用 | 展示工具请求、参数与固定样例返回值 |
-| ReAct · 推理与行动交替 | Thought-Action-Observation 循环，依据观察继续或停止 |
-| Plan-and-Execute · 规划与执行 | 先拆分计划，再执行并按反馈调整 |
-| Plan-and-Execute + Reflexion | 计划v1执行失败后形成反思，修订计划v2并重新执行与验收 |
-| Multi-Agent · 多智能体协作 | Supervisor / 层次化 / Swarm；Agent 间通信与共享状态 |
+| 06 · ① 单 Agent | 先想到公园；查到下雨后，同一个 Agent 用规则与事实修正建议 |
+| 07 · ② ReAct | 自然馆 310 元超预算；根据这次观察，改查博物馆 210 元 |
+| 08 · ③ Plan & Execute | 执行中预算 300 → 200 元；复用资料，修订剩余计划并重新验收 |
+| 09 · ④ 多 Agent | 天气角色建议自然馆，费用角色建议公园；主管核对两份局部判断 |
+| 10 · ⑤ Router + Skill | 用户从安排出游改成只算费用；切换费用技能，跳过天气查询 |
+| 11 · ⑥ Blackboard | 费用角色先等待；场馆名单发布后才触发，资料齐备再汇总 |
+| 12 · ⑦ Graph / Workflow | 默认雨天 200 元，室内候选均超预算；走预设无解边到 END |
 
-“下一步演示”是浏览器本地确定性教学样例；新增“真实模型演示”由本地服务调用 CCSwitch 当前供应商，通过官方 Codex CLI 产生真实模型输出。两种方式都使用合成天气和场馆，不预订行程。离线模式的计划调整和角色反馈来自预设逻辑，不能作为模型能力的实验结果。真实模式的计划、反思与角色摘要来自各次模型调用，程序负责执行工具、合并状态和验收。七个阶段用于逐步解释能力，并非所有任务都要依次升级；它们也不替代后半程五模式、五情景的 25 份诊断轨迹。中英术语集中见[设计卡的术语速查](design-card.md#ai-术语速查)。
+“下一步演示”是浏览器本地确定性教学样例。第 06 至 12 页均有真实模型入口，沿用本地服务的模型连接与备用配置。⑤保持关键词 Router，按需加载技能和 Reference，模型提出流程内的工具请求并交付结果；⑥按黑板就绪条件触发独立角色调用模型，实际发布证据与版本；⑦保持显式节点与条件边，由程序查工具、筛选和核算，模型在结果节点生成回答。两种方式都使用合成天气和场馆，不预订行程。离线决策来自预设逻辑，不能作为模型能力实验结果；真实模式的措辞与探索顺序可能变化，仍要遵守同样的证据和验收条件。课后参考保留五模式、五情景的 25 份诊断轨迹，诊断共享状态仍由 LangGraph 显式调度。中英术语见[设计卡的术语速查](docs/design-card.md#ai-术语速查)。
+
+七页各设不同关键事件，顶部说明当前演示重点，步骤描述谁做什么、发现了什么、为什么继续。第 12 页初始为雨天 200 元，其余页为雨天 300 元；手动修改天气或预算仍会同步各页。第 8 页从 300 降到 200 元，低于或等于 200 元时改为再次确认上限；第 10 页“安排出游”默认演示途中改口，“只核算费用”和“帮我看看”可单独观察费用和澄清分支。回退、重播同步恢复页面上的预算与需求说明。
+
+途中改预算、改需求和局部意见由离线教学脚本设置。真实模型入口使用“更多”中的初始参数，③仍使用明确标注的漏餐费草稿反馈示例，⑤处理当前初始需求，不自动注入这些离线事件。七页图中的黄色「!」在鼠标悬浮时显示局限提示，相关节点和箭头随演示高亮；并发冲突与断点恢复属于尚未演示的边界。
 
 “下一步依赖证据”不构成 Agent 的充分条件。条件与工具映射可穷举时，普通代码或工作流即可；难以预设查询路径、需要解释非结构化信息并选择工具时才评估单 Agent。仅做文本提取的模型节点仍可属于工作流。
 
@@ -44,25 +102,23 @@
 | 开发约束 | 候选及理由 | 仍须实现或核对 |
 | --- | --- | --- |
 | 显式对比固定流、分支、并行与回路 | 本课选 LangGraph：State / Node / Edge 可观察 | 领域工具、路由、reducer、证据校验、预算与日志 |
-| 已有消息团队，以对话和委派为主 | AutoGen：AgentChat 团队与 Core 消息运行时 | 工具、终止、上下文、维护与迁移方案 |
+| Python / .NET 团队需要 Agent、工具与协作工作流 | MAF：Agent、工具与 Workflow | SDK、模型兼容性、执行与恢复配置 |
 | 专业角色按 SOP 交付独立产物 | MetaGPT：Role / Action / Team | 业务 SOP、验收与依赖适配 |
 | Java / 前端 / 客户端接入 | 先定 HTTP 和状态 DTO，再选框架 | 按版本核对语言 SDK；不假设各语言功能对等 |
 
 AutoGen 官方资料核对于 2026-09-21：Maintenance Mode，无新功能或增强，由社区维护；官方建议新用户评估 Microsoft Agent Framework。MetaGPT README 标明 Python ≥3.9 且 <3.12，需再核对具体 release 与依赖。LangGraph 不自动提供业务规则、持久恢复或上传接口；检查点、线程标识、恢复和幂等需要配置与实现。
 
-## LangSmith Studio 对比
+## 课后参考：接单前资料初审与专家辅助
 
-双击 `start-studio.cmd` 可启动独立的本地 Agent Server（2024端口）。课件顶部的“Studio 对比”会打开图与节点状态面板。两个图 `outing_react`、`outing_supervisor` 复用出游案例，Supervisor 可在汇总前暂停并恢复。安装与用法见 [Studio 演示指南](studio-guide.md)。依赖单独列在 `requirements-studio.txt`，未开启云端追踪。
-
-## 后半程实战：接单前资料初审与专家辅助
+以下诊断案例已随原第 41 至 48 页移出主课件；源代码、预录轨迹和设计说明保留为课后参考。运行台界面见[迁移前课件](archive/2026-10-07-before-collaboration-import/index.html)。
 
 唯一业务背景来源为[道通远程专家官方中文页](https://www.auteltech.cn/cloud/3942.jhtml)。官网将其介绍为集合在线专家和客户的远程汽车维修综合服务平台，服务包括远程诊断、编程、防盗、ADAS 和咨询；页面介绍了 VIN 信息、导入报告、发布订单、AI 智能匹配专家、语音/文字/视频/电话沟通，以及实时服务状态和连接状态。这些是产品业务能力；页面未披露 LLM 或多 Agent 内部实现。
 
-课堂任务：门店报告通信故障 U0121，希望远程专家提供咨询。接单前先汇总上传资料中的电压、故障码、网关记录及相关知识；缺失则补充，读数冲突则核对事件时刻和采集时间，保留来源与取舍理由；形成待专家人工复核的资料报告。AI 初审、补充资料流程和角色分工是课程设计，不是对官网内部流程或算法的复述。演示只读取合成记录，不操作真实车辆。
+课堂任务：门店报告通信故障 U0121，希望远程专家提供咨询。接单前先汇总上传资料中的电压、故障码、网关记录及相关知识；缺失则补充，读数冲突则核对事件时刻和采集时间，保留来源与取舍理由；形成供专家复核的资料报告。AI 初审、补充资料流程和角色分工由课程设计，官网未说明内部实现。演示只读取合成记录，不操作真实车辆。
 
 U0121 是与 ABS 控制模块失去通信的故障码，不等于模块损坏；voltage 是供电电压；gateway 是通信网关。远程网络链路中断不能证明车辆故障，网关可达也不证明车辆正常。
 
-原始三字段任务用 `workflow` 足够，无需多 Agent。协作部分新增敏感日志与资料的独立上下文、不同工具权限或独立专业审查责任，才讨论角色拆分；这些是设计约束，生产权限系统需要另行实现。诊断后端、固定数据、工具行为、轨迹结构和五模式×五情景保持不变，只调整任务的业务描述。
+原始三字段任务用 `workflow` 足够，无需多 Agent。协作部分新增敏感日志与资料的独立上下文、不同工具权限或独立专业审查责任，才讨论角色拆分；这些是设计约束，生产权限系统需要另行实现。课后参考保留诊断后端、固定数据、工具和轨迹，包含五种模式、五种情景。
 
 ## 本地 LangGraph 实际运行
 
@@ -78,7 +134,7 @@ python -m venv .venv
 
 如果已经在 agent-training 目录内创建虚拟环境，使用该目录的 .venv/Scripts/python.exe 即可。macOS/Linux 对应使用 .venv/bin/python。
 
-打开 http://127.0.0.1:8765，从目录选择“诊断运行台”。不要用普通静态 HTTP 服务替代：它没有 /api/run。端口占用时加 --port 8766，并访问对应地址。
+打开 http://127.0.0.1:8765 可使用主课件的真实模型入口。诊断案例通过以下 CLI 命令运行；主课件已移除诊断运行台。不要用普通静态 HTTP 服务替代：它没有 /api/run。端口占用时加 --port 8766，并访问对应地址。
 
 ```powershell
 .\.venv\Scripts\python.exe agent-training/demo/agents.py --pattern workflow --scenario missing
@@ -129,15 +185,15 @@ python -m venv .venv
 | 导入历史轨迹 | 展示文件声明的事件，未重新校验业务内容 |
 | 报告 / 人工审核 | 展示待审核报告、证据和检查清单；不修改真实审批状态 |
 
-能力演进已支持真实模型调用，入口、供应商限制、三种多 Agent 组织方式和课堂提示词见[大模型演示指南](model-demo-guide.md)。诊断运行台仍采用规则模拟，--mode 仅接受 simulation，模型参数不会静默退回规则模式。诊断业务案例替换角色决策函数为模型仍是后续扩展点，不能把出游案例的真实模式误认为诊断运行台也已接入模型。
+能力演进已支持真实模型调用，入口、供应商限制、三种多 Agent 组织方式和课堂提示词见[大模型演示指南](docs/model-demo-guide.md)。诊断示例采用规则模拟，--mode 仅接受 simulation。若要使用模型决策，需要替换角色决策函数；出游演示的真实入口不适用于诊断示例。
 
 verified 只表示报告引用和证据契约通过。completed 只表示课堂报告生成，不表示车辆已修复、诊断已确认或人工已批准。诊断运行台无模型费用统计。出游真实模式显示 token 用量，不估算费用。无生产持久化恢复，无真实车辆连接。
 
-能力演进另支持 DeepSeek 备用：主模型连接、认证、限流或超时失败后，显式切换至 `deepseek-flash` 并保留已有证据。Windows 密钥位于仓库外的用户 DPAPI 加密存储，也可从 `DEEPSEEK_API_KEY` 读取。取消与模型输出校验失败不触发备用调用，全部请求共享次数和时长限制。详见[备用配置说明](model-demo-guide.md#deepseek-备用模型)。
+培训真实模型统一优先使用 DeepSeek `deepseek-flash`；连接、认证、限流或超时失败后，显式切换现有 OpenAI/Codex 备用并保留证据。Windows 密钥位于仓库外的用户 DPAPI 加密存储，也可从 `DEEPSEEK_API_KEY` 读取。取消与模型输出校验失败不触发供应商切换。详见[模型配置说明](docs/model-demo-guide.md#deepseek-主配置与-openai-备用)。
 
 ## 服务接口与各端职责
 
-能力演进真实模式接口：`GET /api/outing/config` 返回不含密钥的模型元数据；`POST /api/outing/start` 接受 stage(1–7)、weather、budget、pattern；`GET /api/outing/runs/{id}` 轮询过程；`POST /api/outing/cancel` 接受 `{ "id": "运行ID" }`。单个真实运行最多 12 次模型请求、20 次工具调用、8 分钟；可导出记录，服务重启清空历史。
+能力演进真实模式接口：`GET /api/outing/config` 返回不含密钥的模型元数据；`POST /api/outing/start` 接受 stage(1 至 10)、weather、budget、pattern，以及 Router 使用的 intent；`GET /api/outing/runs/{id}` 轮询过程；`POST /api/outing/cancel` 接受 `{ "id": "运行ID" }`。单个真实运行最多 12 次模型请求、20 次工具调用、8 分钟；可导出记录，服务重启清空历史。
 
 GET /api/health 返回 schema_version、engine、依赖版本、支持的模式/情景和就绪状态。
 
@@ -147,7 +203,7 @@ POST /api/run 接受：
 {"pattern":"integrated","scenario":"conflict","max_steps":30}
 ```
 
-max_steps 可省略，范围 1–30，计数单位为实际执行的图节点。响应为完整轨迹：
+max_steps 可省略，范围 1 至 30，计数单位为实际执行的图节点。响应为完整轨迹：
 
 ```text
 schema_version: 2
@@ -164,7 +220,7 @@ shared_state: observations / plan / draft / review / issues / ...
 
 ## 课堂练习与参考答案
 
-任务：“电压资料无法从工具取得，等待门店通过客户端上传，再恢复任务。”4 分 10 秒内提交暂停/恢复图、上传消息和验收条件。**这是尚未实现的设计练习**：当前 Demo 没有客户端上传接口、持久暂停或恢复功能，`read_supplemental` 读取合成记录不等于等待用户上传。参考答案也在讲师备注和设计卡中。
+课后练习：“电压资料无法从工具取得，等待门店通过客户端上传，再恢复任务。”提交暂停/恢复图、上传消息和验收条件。当前 Demo 没有客户端上传接口、持久暂停或恢复功能，`read_supplemental` 读取合成记录不等于等待用户上传。参考答案见下文与设计卡。
 
 参考职责：客户端展示补充要求并上传；Java 业务服务验证登录身份、工单权限和文件；编排器保存、暂停和恢复；证据角色核验内容及采集时间；审查者验收修订后的建议。无需新增“上传 Agent”。
 
@@ -199,11 +255,21 @@ shared_state: observations / plan / draft / review / issues / ...
 
 ## 构建与检查
 
+在 `agent-training` 目录执行：
+
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s agent-training/demo -v
-.\.venv\Scripts\python.exe agent-training/build.py --package
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_*.py
+.\.venv\Scripts\python.exe tools/check_git_files.py
+node --test tests/architecture_traces.test.cjs
+node --test tests/architecture_visuals.test.cjs
+node --test tests/walkthrough_ui.test.cjs
+node --test tests/outing_live_ui.test.cjs
+node --test tests/collaboration_import_ui.test.cjs
+.\.venv\Scripts\python.exe build.py
 ```
 
-content.py 是内容与时间安排源，concepts.py 保存七个概念图和讲解；template.html 保留视觉模板；player.js 管理诊断与翻页交互；outing-live.js 管理真实模型演示窗口，demo/model_gateway.py 负责 CCSwitch 与官方客户端，demo/outing_live.py 负责七阶段执行和验收；lab.html 是运行台；build.py 内联全部内容，生成 index.html、outline.md、speaker-notes.md、25 份 sample-output 轨迹和样本报告。--package 同步更新仓库根目录 ZIP，不包含虚拟环境、缓存或运行输出。
+浏览器回归需要可用的 Playwright 与 Chrome；若 Playwright 安装在其他目录，可用 `PLAYWRIGHT_MODULE` 指定模块路径。它使用受控接口响应，不调用收费模型。七种架构的机制、优缺点、验证范围及真实窗口隔离说明见 [演示检查记录](docs/demo-audit.md)。需要打包时给构建命令追加 `--package`。
 
-维护课程时修改内容源后重新构建，不直接编辑生成的演示稿或讲稿。核心检查包括总计 48 页、第 04 页进入能力演进、七章秒数 150/150/1070/880/1180/840/1130、合计 90 分钟，以及七个出游演示在晴天/雨天和 300/200/100 元预算下的交互。诊断运行台仍检查五模式×五情景、基线无计划修订、独立证据校验、图节点预算、真实并行、HTTP 契约，以及浏览器中的翻页、回放、本地运行和导入导出。
+course/content.py 是课程结构与时间安排源，course/outing_content.py 定义七种架构的演示文案和讲稿，web/outing.js 执行离线轨迹；course/concepts.py 保留旧能力机制参考。web/template.html 保留视觉模板，web/player.js 管理诊断与翻页。web/outing-live.js 将前四种架构映射到已有真实模型 API 阶段，demo/model_gateway.py 负责 CCSwitch 与官方客户端，demo/outing_live.py 保留原七种能力调用协议。web/lab.html 是运行台；build.py 内联内容，生成 index.html、docs/outline.md、docs/speaker-notes.md；仅含诊断运行台时生成 sample-output 轨迹和样本报告。--package 输出到 dist/，不包含虚拟环境、缓存、工作记录或私人运行输出。
+
+维护课程时修改内容源后重新构建，不直接编辑生成的演示稿或讲稿。架构概览与演示优缺点定义在 course/architectures.py。核心检查覆盖课程大纲、七种架构、五种协作模式、框架介绍和八页 MetaGPT 实战，页码与时长以生成的大纲为准。核对总览页与源文档五张说明卡一致，验证目录及桌面 / 手机布局。实战额外检查证据原文、内容版本、固定验收、真实 MetaGPT 消息触发、修复复审和人工门禁。诊断运行台仍检查五模式×五情景、基线无计划修订、独立证据校验、图节点预算、真实并行、HTTP 契约，以及浏览器中的翻页、回放、本地运行和导入导出。

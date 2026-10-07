@@ -1,0 +1,202 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "开发团队 · Review 与修复",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_dev_team.py",
+      "python": "${workspaceFolder}/.venv-metagpt/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": ["--scenario", "${input:devScenario}", "--step"],
+      "justMyCode": true,
+      "env": {"PYTHONUTF8": "1"}
+    },
+    {
+      "name": "开发团队 · 不修复，转人工",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_dev_team.py",
+      "python": "${workspaceFolder}/.venv-metagpt/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": ["--scenario", "buggy", "--max-repairs", "0"],
+      "justMyCode": true,
+      "env": {"PYTHONUTF8": "1"}
+    },
+    {
+      "name": "真实协作 · Sequential Chain",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "sequential",
+        "--scenario",
+        "${input:scenario}",
+        "--step"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "真实协作 · Supervisor",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "supervisor",
+        "--scenario",
+        "${input:scenario}",
+        "--step"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "真实协作 · Hierarchical",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "hierarchical",
+        "--scenario",
+        "${input:scenario}",
+        "--step"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "真实协作 · Swarm",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "swarm",
+        "--scenario",
+        "${input:scenario}",
+        "--step"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "真实协作 · Network",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "network",
+        "--scenario",
+        "${input:scenario}",
+        "--step"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "资料完整 · 五种真实协作",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "all",
+        "--scenario",
+        "normal"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "资料缺项 · 五种真实协作",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--pattern",
+        "all",
+        "--scenario",
+        "missing"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    },
+    {
+      "name": "课前检查模型配置",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_collaboration.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "--check-model"
+      ],
+      "justMyCode": true,
+      "env": {
+        "PYTHONUTF8": "1"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "devScenario",
+      "type": "pickString",
+      "description": "buggy：状态校验缺陷；clean：无缺陷；incomplete：需求上下文不足",
+      "options": ["buggy", "clean", "incomplete"],
+      "default": "buggy"
+    },
+    {
+      "id": "scenario",
+      "type": "pickString",
+      "description": "normal：资料完整；missing：首次缺餐费",
+      "options": [
+        "normal",
+        "missing"
+      ],
+      "default": "missing"
+    }
+  ]
+}

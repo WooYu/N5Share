@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>团队任务看板</title>
+<style>
+body{font:17px/1.6 system-ui,sans-serif;background:#f1f5fa;color:#18304c;margin:0;padding:48px 24px}main{max-width:840px;margin:auto}h1{font-size:36px;margin-bottom:4px}p{color:#526178}form{display:flex;gap:12px;margin:28px 0}input{flex:1;min-width:0;padding:13px;border:1px solid #bacadc;border-radius:8px;font:inherit}button,select{font:inherit;border-radius:8px;padding:11px 15px;border:1px solid #bacadc}button{background:#2454ce;color:white;cursor:pointer}li{background:white;border:1px solid #d5dfeb;border-radius:10px;display:flex;justify-content:space-between;gap:20px;align-items:center;padding:18px 22px;margin:12px 0}ul{padding:0}li span{overflow-wrap:anywhere}#message{color:#a02525;min-height:28px}
+</style>
+<main><h1>团队任务看板</h1><p>把需求变成任务，记录每一步进展。</p>
+<form id="create"><input id="title" placeholder="输入任务标题" maxlength="120" required aria-label="任务标题"><button>新增任务</button></form>
+<div id="message" role="status"></div><ul id="tasks"></ul></main>
+<script>
+async function api(path,method='GET',data){const r=await fetch(path,{method,headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});const v=await r.json();if(!r.ok)throw Error(v.error||'操作失败');return v;}
+async function refresh(){const tasks=await api('/api/tasks');document.querySelector('#tasks').replaceChildren();for(const task of tasks){const row=document.createElement('li');const label=document.createElement('span');label.textContent=task.title;const status=document.createElement('select');status.setAttribute('aria-label',task.title+' 的状态');for(const [value,text] of [['todo','待开始'],['doing','进行中'],['done','已完成']]){const o=new Option(text,value);status.add(o);}status.value=task.status;status.onchange=async()=>{try{await api('/api/tasks/'+task.id,'PATCH',{status:status.value});await refresh();}catch(e){document.querySelector('#message').textContent=e.message;status.value=task.status;}};row.append(label,status);document.querySelector('#tasks').append(row);}}
+document.querySelector('#create').onsubmit=async e=>{e.preventDefault();try{await api('/api/tasks','POST',{title:document.querySelector('#title').value});document.querySelector('#title').value='';document.querySelector('#message').textContent='';await refresh();}catch(e){document.querySelector('#message').textContent=e.message;}};
+refresh().catch(e=>document.querySelector('#message').textContent=e.message);
+</script></html>

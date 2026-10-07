@@ -148,7 +148,7 @@ class CodexModel:
                          'transport': 'codex-cli', 'protocol': 'structured-action',
                          'credential_source': 'CCSwitch 当前 Codex 配置'}
 
-    def generate(self, instruction, context, cancel):
+    def generate(self, instruction, context, cancel, schema=None):
         if cancel.is_set():
             raise ModelCancelled('运行已停止。')
         # ASCII JSON also avoids console codepage corruption on Windows.
@@ -161,12 +161,12 @@ class CodexModel:
                   'Keep summary under 120 Chinese characters. Unused arrays must be empty.\n')
         with tempfile.TemporaryDirectory(prefix='agent-classroom-') as directory:
             root = Path(directory)
-            schema, output = root / 'schema.json', root / 'answer.json'
-            schema.write_text(json.dumps(STEP_SCHEMA), encoding='utf-8')
+            schema_path, output = root / 'schema.json', root / 'answer.json'
+            schema_path.write_text(json.dumps(schema or STEP_SCHEMA), encoding='utf-8')
             args = self.command + ['exec', '--ignore-user-config', '--ephemeral', '--skip-git-repo-check',
                                    '--sandbox', 'read-only', '--json', '--color', 'never',
                                    '-m', self.provider.model, '-C', directory,
-                                   '--output-schema', str(schema), '-o', str(output)]
+                                   '--output-schema', str(schema_path), '-o', str(output)]
             for setting in ['model_provider="classroom"', 'model_providers.classroom.name="Classroom"',
                             'model_providers.classroom.base_url=' + json.dumps(self.provider.base_url),
                             'model_providers.classroom.wire_api="responses"',
@@ -230,7 +230,11 @@ class CodexModel:
                         usage = {key: val for key, val in event.get('usage', {}).items() if type(val) is int}
                 except ValueError:
                     continue
-            return check_step(value), usage
+            return (check_step(value) if schema is None else value), usage
+
+    def generate_json(self, instruction, context, cancel, schema):
+        """Use the CLI's structured-output schema; the caller validates its DTO."""
+        return self.generate(instruction, context, cancel, schema=schema)
 
 
 def create_model():
@@ -242,6 +246,6 @@ def model_status():
     try:
         model = create_model()
         return {'configured': True, **model.metadata,
-                'notice': '优先使用 CCSwitch 主模型；已配置时可自动切换 DeepSeek 备用，按实际供应商规则计费。'}
+                'notice': '优先使用 DeepSeek；连接失败时切换 CCSwitch 中的 OpenAI/Codex 配置，按实际供应商规则计费。'}
     except ModelError as error:
         return {'configured': False, 'error': str(error)}

@@ -7,11 +7,10 @@ from collections import OrderedDict
 from html import escape
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT / 'course'))
 from content import CHAPTERS, SOURCES, duration_text, slides
 from architectures import OUTING_TRADEOFFS, DIAGNOSIS_TRADEOFFS, ARCHITECTURE_TRADEOFFS
 
+ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / 'demo'))
 from agents import PATTERNS, SCENARIOS, run
 
@@ -21,15 +20,15 @@ def json_script(value):
 
 
 def build():
-    course_duration = duration_text(sum(slide['seconds'] for slide in slides))
     chapters = OrderedDict()
     for slide in slides:
         chapters[slide['chapter']] = chapters.get(slide['chapter'], 0) + slide['seconds']
     if list(chapters.items()) != CHAPTERS:
-        raise ValueError(f'章节时长与大纲不符：{chapters}')
-    has_diagnosis_lab = any('__DIAGNOSIS_LAB__' in slide['body'] for slide in slides)
+        raise ValueError(f'章节时长与90分钟大纲不符：{chapters}')
+    if sum('__DIAGNOSIS_LAB__' in slide['body'] for slide in slides) != 1:
+        raise ValueError('课程需要一个诊断运行台')
     sections = []
-    lab = (ROOT / 'web/lab.html').read_text(encoding='utf-8') if has_diagnosis_lab else ''
+    lab = (ROOT / 'lab.html').read_text(encoding='utf-8')
     for index, slide in enumerate(slides):
         links = ''.join(f'<a href="{escape(SOURCES[key][1], quote=True)}" target="_blank" rel="noopener">{escape(SOURCES[key][0])} ↗</a>' for key in slide['sources'])
         reference_label = '相关参考：' if index < 11 and links else ''
@@ -43,34 +42,32 @@ def build():
         )
     course = [{**slide, 'sources': [SOURCES[key] for key in slide['sources']]} for slide in slides]
     replays = {}
-    for pattern in PATTERNS if has_diagnosis_lab else ():
+    for pattern in PATTERNS:
         for scenario in SCENARIOS:
             trace = run(pattern=pattern, scenario=scenario)
             expected_success = scenario in ('normal', 'missing', 'conflict')
             if bool(trace['verified']) != expected_success:
                 raise RuntimeError(f'轨迹验收失败：{pattern}/{scenario} -> {trace["status"]}')
             replays[f'{pattern}:{scenario}'] = trace
-    html = (ROOT / 'web/template.html').read_text(encoding='utf-8')
+    html = (ROOT / 'template.html').read_text(encoding='utf-8')
     replacements = {
         '__SLIDES__': '\n'.join(sections), '__COURSE__': json_script(course),
-        '__REPLAY__': json_script(replays), '__PLAYER__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('player.js', 'outing.js', 'outing-live.js', 'collaboration-import.js', 'collaboration-training.js')),
+        '__REPLAY__': json_script(replays), '__PLAYER__': '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in ('player.js', 'outing.js', 'outing-live.js')),
         '__DEMO_TRADEOFFS__': json_script(dict(outing=OUTING_TRADEOFFS, diagnosis=DIAGNOSIS_TRADEOFFS, architecture=ARCHITECTURE_TRADEOFFS)),
-        '__IMPORT_STYLES__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('collaboration-import.css', 'collaboration-training.css', 'framework-training.css', 'dev-team.css')),
     }
     for token, value in replacements.items():
         html = html.replace(token, value)
     (ROOT / 'index.html').write_text(html, encoding='utf-8')
     notes = [
-        f'# 高级推理框架与多 Agent 协作 · 讲师讲稿\n\n{course_duration}，{len(slides)} 页。'
+        f'# 高级推理框架与多 Agent 协作 · 讲师讲稿\n\n90 分钟，{len(slides)} 页。'
         '面向 Java 后端、前端、客户端开发者，不预设 Agent 开发经验。\n\n'
-        '备课时打开 [课件](../index.html)，在 VS Code 中运行协作代码。'
-        '安装 requirements.txt 后，用 `python demo/run_collaboration.py` 运行五种模式，'
-        '用 `python demo/server.py` 启动七种架构的真实模型入口。'
-        'HTML 中的“下一步”使用规则示意和固定课堂资料。\n'
+        '备课：安装 requirements.txt 后运行 `python demo/server.py`。默认规则模拟决策，'
+        'LangGraph 实际编排，工具只读合成资料。离线 HTML 内嵌的是预录轨迹；'
+        'completed 仅表示报告生成，仍需人工审核。verified 仅表示证据契约通过。\n'
     ]
     outline = ['# 高级推理框架与多 Agent 协作 · 培训大纲\n\n'
-               f'{course_duration} · Java 后端 / 前端 / 客户端开发者 · 架构与协作模式演示\n\n'
-               '学习目标：判断任务适合用程序、工作流还是 Agent；画出角色、工具、消息、状态和结束条件。\n']
+               '90 分钟 · Java 后端 / 前端 / 客户端开发者 · 远程诊断业务仿真\n\n'
+               '学习目标：按任务复杂度选择推理与协作方式；设计包含角色、工具、消息、状态和结束条件的简单系统。\n']
     for chapter, seconds in chapters.items():
         outline.append(f'\n## {chapter}｜{duration_text(seconds)}\n\n')
         for index, slide in enumerate(slides):
@@ -80,28 +77,21 @@ def build():
         notes.append(f'\n## {index + 1:02} · {slide["title"]}\n\n{slide["chapter"]} · {duration_text(slide["seconds"])}\n\n{slide["notes"]}\n')
         if slide['sources']:
             notes.append('\n来源：' + '；'.join(f'[{SOURCES[key][0]}]({SOURCES[key][1]})' for key in slide['sources']) + '\n')
-    (ROOT / 'docs/speaker-notes.md').write_text(''.join(notes), encoding='utf-8')
-    (ROOT / 'docs/outline.md').write_text(''.join(outline), encoding='utf-8')
-    samples = ROOT / 'test-results/diagnosis-samples'
-    if replays:
-        samples.mkdir(parents=True, exist_ok=True)
+    (ROOT / 'speaker-notes.md').write_text(''.join(notes), encoding='utf-8')
+    (ROOT / 'outline.md').write_text(''.join(outline), encoding='utf-8')
+    samples = ROOT / 'demo' / 'sample-output'
+    samples.mkdir(exist_ok=True)
     for name, trace in replays.items():
         (samples / (name.replace(':', '-') + '-trace.json')).write_text(json.dumps(trace, ensure_ascii=False, indent=2), encoding='utf-8')
-    if replays:
-        (samples / 'report.md').write_text('# 仿真远程诊断报告\n\n' + replays['integrated:conflict']['report'], encoding='utf-8')
-    print(f'Built {len(slides)} slides / {course_duration}; embedded {len(replays)} validated LangGraph replays.')
+    (samples / 'report.md').write_text('# 仿真远程诊断报告\n\n' + replays['integrated:conflict']['report'], encoding='utf-8')
+    print(f'Built {len(slides)} slides / 90 minutes; embedded {len(replays)} validated LangGraph replays.')
 
 
 def package():
-    target = ROOT / 'dist/Agent-Training-HTML-Demo.zip'
-    target.parent.mkdir(parents=True, exist_ok=True)
+    target = ROOT.parent / 'Agent-Training-HTML-Demo.zip'
     files = [path for path in ROOT.rglob('*') if path.is_file()
-             and not any(part in ('__pycache__', '.venv', '.venv-metagpt', '.langgraph_api', 'output', 'test-results', 'work-notes', 'generated-examples', 'dist') for part in path.relative_to(ROOT).parts)
-             and path.suffix in ('.py', '.js', '.cjs', '.css', '.html', '.md', '.json', '.txt', '.cmd', '.ps1', '.png', '.pdf')]
-    collaboration_package = ROOT / 'dist/collaboration-demo.zip'
-    if collaboration_package.is_file():
-        files.append(collaboration_package)
-    files.extend(ROOT / name for name in ('.gitignore', '.gitattributes', 'config/.env.example'))
+             and not any(part in ('__pycache__', '.venv', '.langgraph_api', 'output') for part in path.relative_to(ROOT).parts)
+             and path.suffix in ('.py', '.js', '.html', '.md', '.json', '.txt', '.cmd', '.png', '.pdf')]
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(files):
             archive.write(path, path.relative_to(ROOT.parent))

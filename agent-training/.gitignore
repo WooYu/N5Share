@@ -1,0 +1,37 @@
+# Local runtimes and caches
+.venv/
+.venv-metagpt/
+venv/
+.langgraph_api/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+# Generated presentation, notes, recordings and release packages
+/index.html
+/outline.md
+/speaker-notes.md
+/docs/outline.md
+/docs/speaker-notes.md
+demo/output/
+demo/sample-output/
+demo/collaboration-sample-output/
+test-results/
+dist/
+/archive/work-notes/
+/archive/generated-examples/
+# Local provider configuration
+deepseek.config
+.env
+.env.*
+!.env.example
+*.dpapi
+*.key
+*.pem
+# Keep the shared VS Code launch configuration; ignore machine-only files
+.vscode/*.local.json
+*.code-workspace

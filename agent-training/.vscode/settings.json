@@ -1,0 +1,13 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "files.exclude": {
+    "**/__pycache__": true,
+    ".venv": true,
+    ".langgraph_api": true,
+    "archive/work-notes": true,
+    "archive/generated-examples": true,
+    "demo/output": true,
+    "test-results": true,
+    "deepseek.config": true
+  }
+}

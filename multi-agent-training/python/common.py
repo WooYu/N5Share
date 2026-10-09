@@ -1,6 +1,6 @@
-import ast
 import json
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -67,16 +67,38 @@ def design_tool(requirement: str) -> str:
 
 @tool
 def code_tool(spec: str) -> str:
-    """Return a fixed teaching code sample; does not build an application."""
-    return "# Fixed teaching fixture\ndef add_task(tasks, title):\n    if not title.strip():\n        raise ValueError('empty title')\n    return [*tasks, {'title': title, 'done': False}]\n"
+    """Write a validated multi-file JSON bundle to the host-selected product run only."""
+    root = product_workspace()
+    from product_team.workspace import write_bundle, revision, read_sources
+    from product_team.delivery import run_lock, write_json
+    with run_lock(root):
+        write_bundle(root, json.loads(spec))
+        state_path = root / 'state.json'
+        if state_path.exists():
+            state = json.loads(state_path.read_text(encoding='utf-8'))
+            state.update(status='needs_review', review={}, tests={})
+            state.pop('human_decision', None)
+            write_json(state_path, state)
+        return json.dumps({'revision': revision(root), 'files': list(read_sources(root / 'candidate')),
+                           'status': 'needs_review'}, ensure_ascii=False)
 
 
 @tool
-def test_tool(code: str) -> str:
-    """Parse Python syntax only; does not execute generated code or run unit tests."""
-    try:
-        ast.parse(code)
-    except SyntaxError as error:
-        return json.dumps({"syntax_valid": False, "line": error.lineno,
-                           "reason": error.msg, "unit_tests_executed": False})
-    return json.dumps({"syntax_valid": True, "unit_tests_executed": False})
+def test_tool() -> str:
+    """Execute external HTTP and browser business acceptance in Docker for the selected run."""
+    root = product_workspace()
+    from product_team.acceptance import run_acceptance
+    from product_team.delivery import run_lock
+    with run_lock(root):
+        return json.dumps(run_acceptance(root), ensure_ascii=False)
+
+
+def product_workspace():
+    selected = os.environ.get('TRAINING_PRODUCT_RUN_DIR')
+    if not selected:
+        raise ValueError('The host must select TRAINING_PRODUCT_RUN_DIR; use labs.py --lab devteam --requirements JSON')
+    sys.path.insert(0, str(ROOT.parent / 'agent-training' / 'demo'))
+    from product_team.spec import load_spec
+    root = Path(selected).resolve()
+    load_spec(root / 'product.json')
+    return root

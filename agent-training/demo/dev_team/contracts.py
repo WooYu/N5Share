@@ -55,20 +55,4 @@ def validate_review(report, context):
     return {**report, 'revision': context['revision']}
 
 
-def delivery_gate(root, review, tests, decision=None, approved_revision=None):
-    current = fingerprint(root)
-    if review.get('revision') != current or tests.get('revision') != current:
-        return {'status': 'stale', 'reason': '代码或验收材料已变化，必须重新评审和测试'}
-    if review.get('verdict') == 'needs_context':
-        return {'status': 'needs_context', 'reason': '补齐上下文后重新评审'}
-    if review.get('verdict') != 'pass' or not tests.get('passed'):
-        return {'status': 'needs_fix', 'reason': '评审或固定验收未通过'}
-    if decision is None:
-        return {'status': 'waiting_approval', 'reason': '评审与验收完成，等待人工批准当前版本'}
-    if approved_revision != current:
-        return {'status': 'stale', 'reason': '批准版本不匹配'}
-    if decision == 'reject':
-        return {'status': 'rejected', 'reason': '人工退回，保留材料'}
-    if decision == 'approve':
-        return {'status': 'completed', 'reason': '当前版本评审、验收及人工批准均已满足'}
-    raise ContractError('未知人工决定')
+from product_team.gates import delivery_gate

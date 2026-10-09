@@ -1,5 +1,7 @@
 # 智能开发团队实战：以 Review Agent 为重点
 
+2026-10-10 扩展：固定看板作为 Review 子练习保留；最终产品开发改用 `--requirements` 的多文件生成、Docker 外部验收、版本审批和独立交付，详见 [新产品开发指南](product-development-guide.md)。本文其余内容记录原课堂设计范围。
+
 本章用 MetaGPT 组织开发团队，重点实现 Review Agent。HTML 课件说明角色、输入和验收；VS Code 展示完整源码、模型调用、工具结果和生成文件。
 
 ## 范围与验收

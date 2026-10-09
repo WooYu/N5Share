@@ -20,6 +20,8 @@
 
 ## 第 25 至 32 页：MetaGPT 开发团队与 Review Agent
 
+**新产品实战入口**：使用 `demo/run_dev_team.py --requirements <需求.json>`，由需求驱动 PRD、设计与多文件实现，在 Docker 中运行，执行外部 HTTP 与浏览器业务验收，失败修复后等待当前版本批准。两个不同领域输入、恢复、正式启动及独立 ZIP 交付见 [新产品开发指南](docs/product-development-guide.md)。下述固定看板继续作为 Review 子练习，历史测试记录不代表新产品验收。
+
 用十五分钟运行一次任务看板的评审与修复。首轮 PR 由讲师提供，包含可复现的缺陷；Reviewer 调用模型评审，开发角色根据意见和实际测试失败修复代码，再重新评审、测试并等待人工批准。看板包含前端、HTTP 接口、SQLite 和固定测试。讲解时对照角色产物、输入契约和工具结果。
 
 VS Code 选择“开发团队 · Review 与修复”按 F5。使用独立 `.venv-metagpt` Python 3.11 和 MetaGPT 0.8.2 环境；模型沿用现有网关。重试限制、版本失效与人工审批由代码保证。完整准备、断点、运行、审批和看板命令见 [实战演示手卡](docs/dev-team-demo-guide.md)，设计见 [开发设计](docs/dev-team-design.md)。

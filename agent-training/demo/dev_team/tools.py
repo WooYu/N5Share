@@ -25,15 +25,14 @@ def prepare_workspace(root, scenario):
 
 def fingerprint(root):
     """Bind review, tests and approval to code AND trusted acceptance material."""
-    paths = [Path(root) / 'candidate' / name for name in ('board.py', 'index.html')]
-    paths += [FIXTURES / name for name in ('requirements.md', 'test_board.py')]
-    digest = hashlib.sha256()
-    for path in paths:
-        digest.update(path.name.encode('utf-8') + b'\0' + path.read_bytes() + b'\0')
-    return digest.hexdigest()
+    from product_team.workspace import revision
+    return revision(root)
 
 
 def collect_context(root, incomplete=False, max_chars=24000):
+    if (Path(root) / 'product.json').exists():
+        from product_team.generation import product_context
+        return product_context(root)
     current = (Path(root) / 'candidate' / 'board.py').read_text(encoding='utf-8')
     baseline = (FIXTURES / 'board.py').read_text(encoding='utf-8')
     files = {'board.py': current,
@@ -57,22 +56,10 @@ def collect_context(root, incomplete=False, max_chars=24000):
             'missing': missing, 'truncated': truncated, 'complete': not missing and not truncated}
 
 
-def run_tests(root, timeout=20):
+def run_tests(root, timeout=120):
     """Never run a command proposed by the model; never accept model-written tests."""
-    revision = fingerprint(root)
-    with tempfile.TemporaryDirectory(prefix='review-acceptance-') as directory:
-        target = Path(directory)
-        shutil.copyfile(Path(root) / 'candidate' / 'board.py', target / 'board.py')
-        shutil.copyfile(FIXTURES / 'test_board.py', target / 'test_board.py')
-        command = [sys.executable, '-I', '-m', 'unittest', 'discover', '-s', str(target), '-p', 'test_board.py', '-v']
-        try:
-            result = subprocess.run(command, cwd=target, capture_output=True, timeout=timeout, encoding='utf-8', errors='replace')
-            output = (result.stdout + result.stderr)[-12000:]
-            return {'revision': revision, 'passed': result.returncode == 0 and 'Ran 5 tests' in output,
-                    'exit_code': result.returncode, 'output': output, 'tool': 'fixed_unittest', 'timeout': False}
-        except subprocess.TimeoutExpired:
-            return {'revision': revision, 'passed': False, 'exit_code': None,
-                    'output': '固定验收命令超时，未取得通过证据', 'tool': 'fixed_unittest', 'timeout': True}
+    from product_team.acceptance import run_acceptance
+    return run_acceptance(root, timeout)
 
 
 def write_json(path, value):

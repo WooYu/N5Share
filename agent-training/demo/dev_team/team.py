@@ -59,7 +59,7 @@ def build_team(session):
 
 async def run_team(session):
     team = build_team(session)
-    team.run_project('交付一个任务看板，重点演示代码评审与修复闭环')
+    team.run_project(json.dumps(session.product, ensure_ascii=False) if session.product else '交付一个任务看板，演示代码评审与修复闭环')
     # Run the real MetaGPT environment round by round; budget/gates belong to the host.
     for _ in range(30):
         session.remaining_time()

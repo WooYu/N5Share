@@ -2,6 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "开发团队 · 新产品生成",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/demo/run_dev_team.py",
+      "python": "${workspaceFolder}/.venv-metagpt/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": ["--requirements", "${workspaceFolder}/demo/product_team/examples/${input:productDomain}.json", "--max-model-calls", "20", "--max-seconds", "1800"],
+      "justMyCode": true,
+      "env": {"PYTHONUTF8": "1"}
+    },
+    {
       "name": "开发团队 · Review 与修复",
       "type": "debugpy",
       "request": "launch",
@@ -181,6 +193,13 @@
     }
   ],
   "inputs": [
+    {
+      "id": "productDomain",
+      "type": "pickString",
+      "description": "输入新的业务需求与验收；可替换为自己的 JSON 文件",
+      "options": ["inventory", "booking"],
+      "default": "inventory"
+    },
     {
       "id": "devScenario",
       "type": "pickString",

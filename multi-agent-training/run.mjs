@@ -1,6 +1,7 @@
 import { readFileSync, mkdirSync, writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const modes = ['sequential', 'supervisor', 'hierarchical', 'swarm', 'network', 'devteam', 'security'];
@@ -14,19 +15,14 @@ const roles = {
   editor: '编辑：检查逻辑和事实，保留来源。',
   writer: '作者：综合已有成果，输出包含建议、风险和来源的简短中文报告。',
   seo: 'SEO编辑：输出最终报告，并提供关键词，不新增未经验证的事实。',
-  pm: '产品经理：给出待办事项工具的最小需求及验收标准。',
-  architect: '架构师：给出待办事项工具的数据结构和模块划分。',
-  frontend: '前端工程师：输出交互设计与接口约定，不声称文件已创建。',
-  backend: '后端工程师：输出数据接口与校验建议，不声称文件已创建。',
-  reviewer: '审查员：检查方案的边界条件和一致性，输出待人工确认的评审意见。',
-  tester: '测试工程师：输出测试用例计划。没有执行环境，不声称执行了应用测试。',
 };
 
 function options(argv) {
   const result = { mode: 'sequential', live: false, approve: false, maxSteps: 12,
     maxCalls: 24, output: join(root, 'outputs'), topic: 'AI Agent协作模式选型' };
   const values = { '--mode': 'mode', '--output': 'output', '--topic': 'topic',
-    '--max-steps': 'maxSteps', '--max-calls': 'maxCalls' };
+    '--max-steps': 'maxSteps', '--max-calls': 'maxCalls', '--requirements': 'requirements',
+    '--decision': 'decision', '--run-dir': 'runDir', '--revision': 'revision' };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     if (flag in values) {
@@ -34,6 +30,8 @@ function options(argv) {
       result[values[flag]] = argv[++i];
     } else if (flag === '--live') result.live = true;
     else if (flag === '--approve') result.approve = true;
+    else if (flag === '--check') result.check = true;
+    else if (flag === '--resume') result.resume = true;
     else if (flag === '--force-cycle') result.forceCycle = true;
     else if (flag === '--help') result.help = true;
     else throw new Error(`Unknown option: ${flag}`);
@@ -68,12 +66,6 @@ function offlineOutput(name, topic, previous) {
     editor: '编辑结果：移除未经本地资料支持的市场数据，保留事实与建议的区分。\n' + report,
     writer: report,
     seo: (previous.at(-1)?.content || report) + '\n\n关键词：多Agent、Supervisor、Swarm、顺序流水线、消息状态、人工审批。',
-    pm: '最小需求：添加待办、查看待办、标记完成。验收：空标题拒绝，新增事项默认未完成，完成状态可查询。这是固定教学需求模板。',
-    architect: '教学设计：Task包含id、title、done；输入校验、状态存储与输出分离。此演练不创建数据库或部署应用。',
-    frontend: '交互计划：标题输入框、添加命令、列表与完成复选框。与后端约定错误信息和状态字段。本次未创建或运行前端应用。',
-    backend: '接口计划：add(title)、list()、complete(id)。拒绝空标题与不存在的id。本次没有执行或发布后端代码。',
-    reviewer: '评审意见：需要补齐id生成规则、重复标题策略和删除需求。请人工确认方案后再进入tester；本次只是固定模拟评审。',
-    tester: '测试计划：空标题被拒绝，新增默认done=false，完成事项可查询，无效id有错误。此角色只给出计划，没有执行业务测试。',
   };
   return label + templates[name];
 }
@@ -158,9 +150,27 @@ function validateTask(receiver, tools, usage, budget) {
 async function main() {
   const config = options(process.argv.slice(2));
   if (config.help) {
-    console.log(`node run.mjs --mode ${modes.join('|')} [--live] [--approve]\n` +
+    console.log(`node run.mjs --mode ${modes.join('|')} [--live]\n` +
       'Options: --topic TEXT --output PATH --max-steps 12 --max-calls 24\n' +
+      'Product: --mode devteam --requirements JSON [--check] [--resume]\n' +
+      'Product approval: --mode devteam --decision approve|reject --run-dir PATH --revision SHA\n' +
       'Offline failure exercise: --mode network --force-cycle --max-steps 4');
+    return;
+  }
+  if (config.mode === 'devteam') {
+    if (config.approve) throw new Error('--approve cannot approve future output; use --decision approve --run-dir PATH --revision SHA');
+    if (!config.requirements && !config.resume && !config.decision && !config.check)
+      throw new Error('devteam requires --requirements JSON with business and browser acceptance');
+    const productRoot = resolve(root, '../agent-training');
+    const python = process.env.TRAINING_PRODUCT_PYTHON || join(productRoot, '.venv-metagpt', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+    const args = ['-X', 'utf8', join(productRoot, 'demo/run_dev_team.py')];
+    for (const [field, flag] of Object.entries({requirements:'--requirements', output:'--output', decision:'--decision', runDir:'--run-dir', revision:'--revision'}))
+      if (config[field]) args.push(flag, ['requirements','output','runDir'].includes(field) ? resolve(config[field]) : config[field]);
+    if (config.check) args.push('--check');
+    if (config.resume) args.push('--resume');
+    const result = spawnSync(python, args, {cwd: productRoot, stdio: 'inherit', shell: false});
+    if (result.error) throw result.error;
+    process.exitCode = result.status ?? 1;
     return;
   }
   if (config.live && !process.env.DEEPSEEK_API_KEY?.trim()) throw new Error('Set DEEPSEEK_API_KEY before using --live');
@@ -204,14 +214,6 @@ async function main() {
         }
         break;
       }
-      case 'devteam':
-        for (const name of ['pm', 'architect', 'frontend', 'backend', 'reviewer']) await session.worker(name);
-        if (!config.approve) {
-          report.status = 'awaiting_approval';
-          session.events.push({ kind: 'interrupt', agent: 'reviewer', next: 'tester' });
-          console.log('PAUSED: tester has not run. Use --approve to run the approved exercise again.');
-        } else await session.worker('tester');
-        break;
       case 'security': {
         const blocked = callback => { try { callback(); return false; } catch { return true; } };
         report.checks = {

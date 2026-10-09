@@ -33,19 +33,13 @@ for (const mode of ['sequential', 'supervisor', 'hierarchical', 'swarm', 'networ
   });
 }
 
-test('human approval pauses before the tester and explicit approval resumes', () => {
-  const output = mkdtempSync(join(tmpdir(), 'agent-training-'));
-  try {
-    assert.equal(run(['--mode', 'devteam', '--output', output]).status, 0);
-    let report = JSON.parse(readFileSync(join(output, 'devteam.json'), 'utf8'));
-    assert.equal(report.status, 'awaiting_approval');
-    assert.ok(!report.events.some(event => event.agent === 'tester'));
-    assert.ok(!existsSync(join(output, 'devteam.md')));
-    assert.equal(run(['--mode', 'devteam', '--approve', '--output', output]).status, 0);
-    report = JSON.parse(readFileSync(join(output, 'devteam.json'), 'utf8'));
-    assert.equal(report.status, 'completed');
-    assert.ok(report.events.some(event => event.agent === 'tester'));
-  } finally { rmSync(output, { recursive: true, force: true }); }
+test('product entry rejects missing requirements and approval of future output', () => {
+  const result = run(['--mode', 'devteam']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /requirements/);
+  const approval = run(['--mode', 'devteam', '--approve']);
+  assert.equal(approval.status, 1);
+  assert.match(approval.stderr, /revision/);
 });
 
 test('a handoff cycle is stopped by an enforced step limit', () => {

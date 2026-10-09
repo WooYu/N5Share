@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import getpass
+import hashlib
 import json
 import os
 import sys
@@ -89,14 +90,14 @@ def build_supervisor(model):
 
 def build_hierarchical(model):
     tech = create_supervisor(model=model, agents=[
-        worker(model, "frontend", [code_tool], "Discuss frontend requirements; the code tool is a fixed teaching fixture."),
-        worker(model, "backend", [code_tool], "Discuss backend interfaces; the code tool is a fixed teaching fixture."),
+        worker(model, "frontend", [design_tool], "Discuss frontend design; this graph does not deliver products."),
+        worker(model, "backend", [design_tool], "Discuss backend design; this graph does not deliver products."),
     ], prompt="Coordinate frontend and backend, summarize once and return.").compile(name="tech_supervisor")
     design = create_supervisor(model=model, agents=[
         worker(model, "ui", [design_tool], "Discuss UI design with the teaching template."),
         worker(model, "ux", [design_tool], "Discuss UX design with the teaching template."),
     ], prompt="Coordinate UI and UX, summarize once and return.").compile(name="design_supervisor")
-    qa = worker(model, "qa", [test_tool], "Review test requirements. test_tool checks syntax only; never claim unit tests ran.")
+    qa = worker(model, "qa", [], "Review the proposed test requirements; this planning graph does not execute product tests.")
     return create_supervisor(model=model, agents=[tech, design, qa], prompt=(
         "Ask tech_supervisor and design_supervisor for plans, then qa for a review. "
         "Return a concise Chinese teaching plan; do not claim a website was built."
@@ -121,9 +122,19 @@ def build_network(model, max_steps):
         messages: Annotated[list, add_messages]
         next_agent: str
         steps: int
+        artifact_sha256: str
+        reviewed_sha256: str
 
     class Route(BaseModel):
         next_agent: Literal["planner", "executor", "reviewer", "END"]
+
+    class Review(BaseModel):
+        verdict: Literal['pass', 'request_changes']
+        summary: str
+
+    def artifact_hash():
+        path = OUTPUT / 'agent_report.md'
+        return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() and path.stat().st_size else ''
 
     agents = {
         "planner": worker(model, "planner", [search_tool], "Plan based on local sources and retain IDs."),
@@ -131,54 +142,52 @@ def build_network(model, max_steps):
         "reviewer": worker(model, "reviewer", [analyze_tool], "Review the proposal and explain whether it is complete."),
     }
 
-    def wrap(agent):
+    def wrap(name, agent):
         def node(state):
             result = agent.invoke({"messages": state["messages"]}, config={"recursion_limit": 20})
-            return {"messages": result["messages"], "steps": state["steps"] + 1}
+            update = {"messages": result["messages"], "steps": state["steps"] + 1}
+            prior = {getattr(message, 'id', None) for message in state['messages']}
+            actual_write = any(getattr(m, 'type', None) == 'tool' and getattr(m, 'name', '') == 'write_tool'
+                               and getattr(m, 'id', None) not in prior and str(m.content) == str(OUTPUT / 'agent_report.md')
+                               for m in result['messages'])
+            if name == 'executor' and actual_write:
+                update.update(artifact_sha256=artifact_hash(), reviewed_sha256='')
+            if name == 'reviewer' and state.get('artifact_sha256') == artifact_hash() and artifact_hash():
+                review = model.with_structured_output(Review, method='function_calling').invoke([
+                    HumanMessage(content='Review this actual proposal. Return pass only if it fulfills the task.\n' +
+                                 (OUTPUT / 'agent_report.md').read_text(encoding='utf-8')), *result['messages']])
+                update['reviewed_sha256'] = artifact_hash() if review.verdict == 'pass' else ''
+            return update
         return node
 
     router_model = model.with_structured_output(Route, method="function_calling")
 
     def router(state):
+        current = artifact_hash()
+        complete = bool(current and state.get('artifact_sha256') == current and state.get('reviewed_sha256') == current)
         if state["steps"] >= max_steps:
+            if complete:
+                return {'next_agent': 'END'}
             raise RuntimeError("Network worker budget reached; task was not marked complete")
         choice = router_model.invoke([
             HumanMessage(content="Choose the next worker: planner, executor, reviewer or END. "
                          "Use END only when the proposal has been reviewed and is complete."),
             *state["messages"],
         ])
-        return {"next_agent": choice.next_agent}
+        next_agent = choice.next_agent
+        if next_agent == 'END' and not complete:
+            next_agent = 'executor' if not current or state.get('artifact_sha256') != current else 'reviewer'
+        return {"next_agent": next_agent}
 
     graph = StateGraph(NetworkState)
     for name, agent in agents.items():
-        graph.add_node(name, wrap(agent))
+        graph.add_node(name, wrap(name, agent))
         graph.add_edge(name, "router")
     graph.add_node("router", router)
     graph.add_edge(START, "planner")
     graph.add_conditional_edges("router", lambda state: state["next_agent"],
                                 {**{name: name for name in agents}, "END": END})
     return graph.compile(name="network")
-
-
-def build_devteam(model):
-    # The reviewer must be an OUTER graph node for interrupt_after to target it.
-    graph = StateGraph(MessagesState)
-    definitions = [
-        ("pm", [], "Produce minimal requirements and acceptance criteria for a todo tool."),
-        ("architect", [design_tool], "Give a design using the teaching architecture template."),
-        ("frontend", [code_tool], "Discuss UI contracts, label tool code as a fixed fixture."),
-        ("backend", [code_tool], "Discuss data contracts, label tool code as a fixed fixture."),
-        ("reviewer", [], "Review the proposal and identify issues requiring human approval."),
-        ("tester", [test_tool], "Give test cases. Syntax parsing is not a unit test run; state the distinction."),
-    ]
-    for name, tools, prompt in definitions:
-        graph.add_node(name, worker(model, name, tools, prompt))
-    names = [name for name, _, _ in definitions]
-    graph.add_edge(START, names[0])
-    for previous, following in zip(names, names[1:]):
-        graph.add_edge(previous, following)
-    graph.add_edge(names[-1], END)
-    return graph.compile(name="devteam", checkpointer=InMemorySaver(), interrupt_after=["reviewer"])
 
 
 async def run_autogen(task, check_only, max_turns):
@@ -235,7 +244,13 @@ def main():
     parser.add_argument("--replay", nargs="?", const=str(OUTPUT / "supervisor.json"),
                         help="Replay a saved message history without executing models or tools")
     parser.add_argument("--replay-delay", type=float, default=0.3, help="Seconds between recorded messages")
-    parser.add_argument("--approve", action="store_true", help="Explicitly resume devteam after reviewer in this process")
+    parser.add_argument("--approve", action="store_true", help="Removed for product delivery; approve an existing revision instead")
+    parser.add_argument("--requirements")
+    parser.add_argument("--output")
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--decision", choices=['approve', 'reject'])
+    parser.add_argument("--run-dir")
+    parser.add_argument("--revision")
     parser.add_argument("--topic", default="AI Agent协作模式选型")
     parser.add_argument("--max-steps", type=int, default=8)
     parser.add_argument("--max-turns", type=int, default=3)
@@ -248,6 +263,9 @@ def main():
     if args.replay:
         replay_trace(args.replay, ConsoleTrace(details=args.trace_details), delay=args.replay_delay)
         return
+    if args.lab == 'devteam':
+        from product_bridge import run
+        raise SystemExit(run(args))
     if sys.version_info < (3, 12):
         parser.error("Python 3.12 or newer is required")
     key = os.getenv("DEEPSEEK_API_KEY", "").strip()
@@ -258,7 +276,7 @@ def main():
         return
     model = make_model(args.check)
     builders = {"sequential": build_sequential, "supervisor": build_supervisor,
-                "hierarchical": build_hierarchical, "swarm": build_swarm, "devteam": build_devteam}
+                "hierarchical": build_hierarchical, "swarm": build_swarm}
     app = build_network(model, args.max_steps) if args.lab == "network" else builders[args.lab](model)
     if args.check:
         print(f"CHECK ONLY: {args.lab} compiled; no API request made")
@@ -270,15 +288,6 @@ def main():
     if args.lab == "network":
         inputs.update(next_agent="planner", steps=0)
     result = run_with_trace(app, inputs, config, ConsoleTrace(details=args.trace_details)) if args.trace else app.invoke(inputs, config=config)
-    if args.lab == "devteam":
-        pending = app.get_state(config).next
-        if pending and args.approve:
-            print(f"Explicit approval received; resuming pending nodes: {pending}")
-            result = run_with_trace(app, None, config, ConsoleTrace(details=args.trace_details)) if args.trace else app.invoke(None, config=config)
-            pending = app.get_state(config).next
-        result = {"status": "awaiting_approval" if pending else "completed",
-                  "pending_nodes": list(pending), "state": result}
-        print(f"Status: {result['status']}; pending: {pending}")
     save(args.lab, result)
     if args.lab == "sequential":
         print(result["seo_content"])

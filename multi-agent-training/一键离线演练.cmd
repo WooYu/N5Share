@@ -7,7 +7,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-for %%M in (sequential supervisor hierarchical swarm network devteam security) do (
+for %%M in (sequential supervisor hierarchical swarm network security) do (
   node run.mjs --mode %%M
   if errorlevel 1 goto failed
 )

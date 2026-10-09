@@ -59,6 +59,7 @@ class ReviewContractTests(unittest.TestCase):
         revision = fingerprint(self.root)
         report = {'verdict': 'pass', 'summary': '检查通过', 'findings': [], 'revision': revision}
         tests = run_tests(self.root)
+        self.assertTrue(tests['passed'], tests)
         self.assertEqual(delivery_gate(self.root, report, tests)['status'], 'waiting_approval')
         self.assertEqual(delivery_gate(self.root, report, tests, 'approve', revision)['status'], 'completed')
         self.assertEqual(delivery_gate(self.root, report, tests, 'reject', revision)['status'], 'rejected')
@@ -67,9 +68,18 @@ class ReviewContractTests(unittest.TestCase):
         self.assertEqual(delivery_gate(self.root, report, tests, 'approve', revision)['status'], 'stale')
 
     def test_delivered_board_http_flow_persists_and_rejects_invalid_state(self):
-        from demo.dev_team.serve_board import handler
+        from product_team.delivery import proxy_handler, approve, approved_release
+        from product_team.sandbox import Sandbox
+        from dev_team.tools import write_json
         prepare_workspace(self.root, 'clean')
-        server = ThreadingHTTPServer(('127.0.0.1', 0), handler(self.root))
+        version = fingerprint(self.root)
+        write_json(self.root / 'state.json', {'status': 'waiting_approval',
+            'review': {'revision': version, 'verdict': 'pass', 'findings': []}})
+        approved = approve(self.root, 'approve', version)
+        self.assertEqual(approved['status'], 'completed', approved)
+        release, approval = approved_release(self.root)
+        box = self.enterContext(Sandbox(release / 'candidate', approval['image'], legacy=True))
+        server = ThreadingHTTPServer(('127.0.0.1', 0), proxy_handler(box))
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         def request(path, method='GET', body=None):
@@ -83,7 +93,8 @@ class ReviewContractTests(unittest.TestCase):
         try:
             code, task = request('/api/tasks', 'POST', {'title': '验收看板'})
             self.assertEqual(code, 201)
-            self.assertEqual(request(f"/api/tasks/{task['id']}", 'PATCH', {'status': 'done'})[0], 200)
+            updated = request(f"/api/tasks/{task['id']}", 'PATCH', {'status': 'done'})
+            self.assertEqual(updated, (200, {'id': task['id'], 'title': '验收看板', 'status': 'done'}))
             self.assertEqual(request('/api/tasks')[1][0]['status'], 'done')
             self.assertEqual(request(f"/api/tasks/{task['id']}", 'PATCH', {'status': 'deleted'})[0], 400)
             self.assertEqual(request('/api/tasks')[1][0]['status'], 'done')

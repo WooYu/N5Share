@@ -9,7 +9,7 @@
 | 离线演练 | 双击 `一键离线演练.cmd`，或 `node run.mjs --mode sequential` | Node.js 22+，不需要额外包和账号 | 本机已实测 |
 | Node.js 真模型 | `node run.mjs --mode supervisor --live` | 环境变量 `DEEPSEEK_API_KEY`，可连接 DeepSeek API | 尚未真实调用 |
 | Python 原框架 | `python/labs.py` | Python 3.12+、依赖和 DeepSeek Key | 本机 Python 3.13 已安装依赖，Supervisor 已完成真实模型调用；其他实验待验证 |
-| MCP 本地连接 | `python/mcp_client.py` | Python 和 MCP SDK，不需要模型账号 | 待 Python 环境验证 |
+| MCP 本地连接 | `python/mcp_client.py` | Python 和 MCP SDK，不需要模型账号 | 2026-10-10 已实际验证本地协议 |
 
 离线演练是固定规则模拟，用于观察控制流，**不代表真实大模型推理，也没有执行互联网搜索**。Python 路线使用 LangGraph、Supervisor、Swarm 和 AutoGen；Node.js 路线是便于课堂启动的辅助演练，不使用这些框架。
 
@@ -24,18 +24,18 @@ node run.mjs --mode supervisor
 node run.mjs --mode hierarchical
 node run.mjs --mode swarm
 node run.mjs --mode network
-node run.mjs --mode devteam
+node run.mjs --mode devteam --requirements ../agent-training/demo/product_team/examples/inventory.json --output ./outputs/inventory
 node run.mjs --mode security
 node --test tests.mjs
 ```
 
-结果保存在 `outputs`。`devteam` 默认停在评审后，尚未运行 tester。
+其他模式结果保存在 `outputs`。`devteam` 接入实际 MetaGPT 产品生成，先完成隔离业务验收，再等待当前版本批准。需准备相邻 agent-training 的独立环境和 Docker。
 
 ```powershell
-node run.mjs --mode devteam --approve
+node run.mjs --mode devteam --decision approve --run-dir ./outputs/inventory --revision <实际版本摘要>
 ```
 
-Node.js 的 `--approve` 会重新运行本次流程并允许测试角色发言，不读取上一轮检查点。Python 的 `--approve` 会在同一进程中从检查点恢复，详见讲义。
+Node/Python 的 devteam 共用版本门禁；`--approve` 已禁用。通过 `--requirements` 输入新需求，`--resume --output` 恢复，`--decision` 批准实际版本。完整说明见 [新产品实战](../agent-training/docs/product-development-guide.md)。其他协作演练的“completed”仅表示各自报告任务完成。
 
 ## VS Code 演示 Supervisor
 

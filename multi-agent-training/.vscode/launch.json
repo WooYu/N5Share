@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Supervisor: Live trace (F5)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/python/labs.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["--lab", "supervisor", "--trace", "--ask-key", "--recursion-limit", "40", "--topic", "Write a short Chinese report comparing multi-agent collaboration patterns using local sources; retain source IDs."],
+      "env": { "PYTHONUTF8": "1", "PYTHONUNBUFFERED": "1", "DEEPSEEK_MODEL": "deepseek-chat", "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false" }
+    },
+    {
+      "name": "Supervisor: Replay (F5)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/python/labs.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": ["--replay"],
+      "env": { "PYTHONUTF8": "1", "PYTHONUNBUFFERED": "1" }
+    }
+  ]
+}

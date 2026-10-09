@@ -1,0 +1,9 @@
+[
+  {"id":"source-01","title":"多Agent的核心区别","text":"每个真实Agent拥有独立的模型上下文和角色提示词。固定函数分工不等于自主Agent；是否需要多Agent应根据任务复杂度和成本判断。"},
+  {"id":"source-02","title":"Supervisor","text":"中央调度Agent分配任务，Worker执行后汇报，适用于动态分发和结果整合。中心节点可能形成调度瓶颈。"},
+  {"id":"source-03","title":"Hierarchical","text":"多层Supervisor管理多个子团队。编译后的子图应具有唯一名称，顶层才能区分不同子团队。"},
+  {"id":"source-04","title":"Swarm","text":"Agent通过Handoff主动交接控制权，没有统一中央调度。必须设置退出条件与调用上限。轮询式讨论不等于自主交接。"},
+  {"id":"source-05","title":"Sequential Chain","text":"研究、提纲、草稿、编辑和SEO按照固定顺序执行。步骤确定时可采用工作流，未必需要自主调度。"},
+  {"id":"source-06","title":"Network","text":"对等Agent可自由路由。路由结果要校验，消息要正确合并，并设置步数或递归限制，防止无限循环。"},
+  {"id":"source-07","title":"协议与安全","text":"A2A连接Agent与Agent，MCP连接应用与工具或数据。工具白名单、超时和预算检查需要由执行代码落实；结构化消息不能保证防止提示词注入。"}
+]

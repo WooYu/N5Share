@@ -1,0 +1,5 @@
+.venv/
+python/.env
+python/requirements.lock.local.txt
+__pycache__/
+*.pyc

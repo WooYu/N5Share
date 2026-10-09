@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多Agent协同系统设计 — 教学教案</title>
+<style>
+:root {
+  --primary: #e8652e;
+  --primary-light: #ff8a50;
+  --primary-bg: #fef3ee;
+  --dark: #1a1a2e;
+  --dark-2: #2d2d44;
+  --text: #2c2c3a;
+  --text-light: #6b6b80;
+  --bg: #fafafa;
+  --card-bg: #ffffff;
+  --border: #e8e8ef;
+  --code-bg: #1e1e2e;
+  --code-text: #cdd6f4;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --info: #3498db;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --sidebar-w: 280px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.8; font-size: 16px;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  height: 60px; display: flex; align-items: center; padding: 0 24px;
+  justify-content: space-between;
+}
+.top-bar .logo {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 18px; color: var(--dark);
+}
+.top-bar .logo .icon {
+  width: 32px; height: 32px; background: var(--primary);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 800;
+}
+.top-bar .progress-wrap { flex: 1; max-width: 400px; margin: 0 24px; }
+.top-bar .progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.top-bar .progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 2px; transition: width 0.4s ease; width: 0%;
+}
+.top-bar .progress-text {
+  font-size: 12px; color: var(--text-light); text-align: right; margin-top: 2px;
+}
+.menu-btn {
+  display: none; background: none; border: none; font-size: 24px;
+  cursor: pointer; color: var(--text); padding: 4px;
+}
+
+.sidebar {
+  position: fixed; top: 60px; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--card-bg); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 20px 0; z-index: 900;
+  transition: transform var(--transition);
+}
+.sidebar .nav-group { margin-bottom: 8px; }
+.sidebar .nav-group-title {
+  padding: 8px 24px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light);
+}
+.sidebar .nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 24px; font-size: 14px; color: var(--text);
+  text-decoration: none; cursor: pointer; transition: all var(--transition);
+  border-left: 3px solid transparent;
+}
+.sidebar .nav-item:hover { background: var(--primary-bg); color: var(--primary); }
+.sidebar .nav-item.active {
+  background: var(--primary-bg); color: var(--primary);
+  border-left-color: var(--primary); font-weight: 600;
+}
+.sidebar .nav-item .num {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--border); display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700;
+  flex-shrink: 0; transition: all var(--transition);
+}
+.sidebar .nav-item.active .num,
+.sidebar .nav-item:hover .num { background: var(--primary); color: #fff; }
+.sidebar .nav-item.done .num { background: var(--success); color: #fff; }
+
+.main {
+  margin-left: var(--sidebar-w); margin-top: 60px; padding: 40px;
+  max-width: 960px; margin-right: auto;
+}
+
+.hero { text-align: center; padding: 60px 20px 40px; }
+.hero .badge {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  background: var(--primary-bg); color: var(--primary);
+  font-size: 13px; font-weight: 600; margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: clamp(28px, 5vw, 44px); font-weight: 800;
+  color: var(--dark); line-height: 1.3; margin-bottom: 16px;
+}
+.hero h1 span { color: var(--primary); }
+.hero .subtitle {
+  font-size: 18px; color: var(--text-light); max-width: 600px;
+  margin: 0 auto 32px; line-height: 1.7;
+}
+.hero .meta {
+  display: flex; justify-content: center; gap: 24px;
+  flex-wrap: wrap; font-size: 13px; color: var(--text-light);
+}
+.hero .meta span { display: flex; align-items: center; gap: 6px; }
+
+.video-slot {
+  background: var(--code-bg); border-radius: var(--radius);
+  aspect-ratio: 16/9; max-width: 720px; margin: 32px auto;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; color: #666; position: relative;
+  overflow: hidden; cursor: pointer; transition: all var(--transition);
+}
+.video-slot:hover { transform: scale(1.01); box-shadow: var(--shadow-lg); }
+.video-slot .play-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--primary); display: flex; align-items: center;
+  justify-content: center; font-size: 24px; color: #fff;
+  box-shadow: 0 4px 20px rgba(232,101,46,0.4);
+}
+.video-slot .play-label { font-size: 14px; color: #888; }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px; margin: 40px 0;
+}
+.stat-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 20px; text-align: center; border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.stat-card .stat-num { font-size: 28px; font-weight: 800; color: var(--primary); }
+.stat-card .stat-label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+.section { margin-bottom: 64px; }
+.section-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+.section-header .sec-num {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--primary); color: #fff; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; flex-shrink: 0;
+}
+.section-header h2 { font-size: 24px; font-weight: 700; color: var(--dark); }
+.section-header .sec-en { font-size: 13px; color: var(--text-light); font-weight: 400; }
+
+.voice-line {
+  background: linear-gradient(135deg, #fff8f0, #fff3e8);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 16px 20px; margin: 20px 0; font-size: 15px;
+  color: #5a3e2b; line-height: 1.8; position: relative;
+}
+.voice-line::before {
+  content: "\1F3A4"; position: absolute; top: -10px; left: -14px;
+  background: var(--primary); color: #fff; width: 28px; height: 28px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+.concept-tip {
+  position: relative; display: inline;
+  border-bottom: 2px dashed var(--primary);
+  cursor: help; color: var(--primary); font-weight: 600;
+}
+.concept-tip .tip-box {
+  display: none; position: absolute; bottom: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%);
+  background: var(--dark); color: #fff; padding: 10px 14px;
+  border-radius: var(--radius-sm); font-size: 13px; font-weight: 400;
+  width: 260px; line-height: 1.6; z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+.concept-tip .tip-box::after {
+  content: ""; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 6px solid transparent;
+  border-top-color: var(--dark);
+}
+.concept-tip:hover .tip-box { display: block; }
+
+.code-block {
+  background: var(--code-bg); border-radius: var(--radius);
+  margin: 16px 0; overflow: hidden;
+}
+.code-block .code-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px; background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.code-block .code-lang {
+  font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase;
+}
+.code-block .copy-btn {
+  background: none; border: 1px solid rgba(255,255,255,0.15);
+  color: #888; padding: 2px 10px; border-radius: 4px; font-size: 12px;
+  cursor: pointer; transition: all var(--transition);
+}
+.code-block .copy-btn:hover { color: #fff; border-color: #fff; }
+.code-block pre { padding: 16px; overflow-x: auto; font-size: 14px; line-height: 1.7; }
+.code-block code {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  color: var(--code-text);
+}
+.kw { color: #cba6f7; }
+.str { color: #a6e3a1; }
+.cm { color: #6c7086; font-style: italic; }
+.fn { color: #89b4fa; }
+.num { color: #fab387; }
+.op { color: #89dceb; }
+.prop { color: #f9e2af; }
+.cls { color: #89dceb; }
+
+.compare-table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  font-size: 14px; border-radius: var(--radius); overflow: hidden;
+}
+.compare-table thead { background: var(--dark); color: #fff; }
+.compare-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; }
+.compare-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.compare-table tbody tr:hover { background: var(--primary-bg); }
+.compare-table tbody tr:last-child td { border-bottom: none; }
+
+.flow-diagram {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 8px; margin: 24px 0; padding: 24px;
+  background: var(--card-bg); border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.flow-node {
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; text-align: center; min-width: 100px;
+}
+.flow-node.primary { background: var(--primary); color: #fff; }
+.flow-node.secondary { background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary); }
+.flow-arrow { font-size: 20px; color: var(--text-light); }
+
+.accordion { margin: 16px 0; }
+.accordion-item {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 8px; overflow: hidden;
+}
+.accordion-header {
+  padding: 14px 20px; background: var(--card-bg); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 600; font-size: 15px; transition: all var(--transition);
+}
+.accordion-header:hover { background: var(--primary-bg); }
+.accordion-header .arrow { transition: transform var(--transition); font-size: 12px; }
+.accordion-item.open .accordion-header .arrow { transform: rotate(180deg); }
+.accordion-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+  padding: 0 20px;
+}
+.accordion-item.open .accordion-body { max-height: 2000px; padding: 0 20px 20px; }
+
+.step-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 40px 0 20px; padding-top: 20px; border-top: 1px solid var(--border);
+}
+.step-nav button {
+  padding: 10px 24px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--card-bg);
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: all var(--transition); display: flex; align-items: center; gap: 8px;
+}
+.step-nav button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.step-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+.step-nav button:disabled:hover { background: var(--card-bg); color: var(--text); border-color: var(--border); }
+
+.highlight-box { border-radius: var(--radius); padding: 20px 24px; margin: 20px 0; }
+.highlight-box.tip { background: #eef7ff; border-left: 4px solid var(--info); }
+.highlight-box.warn { background: #fff8e1; border-left: 4px solid var(--warning); }
+.highlight-box.key { background: #e8f5e9; border-left: 4px solid var(--success); }
+.highlight-box .hl-title { font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+.highlight-box.tip .hl-title { color: var(--info); }
+.highlight-box.warn .hl-title { color: var(--warning); }
+.highlight-box.key .hl-title { color: var(--success); }
+
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; margin: 20px 0;
+}
+.info-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 20px; border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.info-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.info-card .card-icon { font-size: 28px; margin-bottom: 10px; }
+.info-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--dark); }
+.info-card p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+
+.memory-layer {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 24px; margin: 16px 0; border: 1px solid var(--border);
+}
+.memory-layer .layer-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+}
+.memory-layer .layer-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.memory-layer .layer-q { font-size: 13px; color: var(--text-light); font-weight: 600; }
+.memory-layer h4 { font-size: 17px; font-weight: 700; }
+.memory-layer p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+
+.scenario-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden; margin: 20px 0;
+}
+.scenario-card .scenario-header {
+  padding: 20px 24px; background: linear-gradient(135deg, var(--dark), var(--dark-2));
+  color: #fff;
+}
+.scenario-card .scenario-header h3 { font-size: 18px; font-weight: 700; }
+.scenario-card .scenario-header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.scenario-card .scenario-body { padding: 24px; }
+
+.faq-section { margin: 40px 0; }
+.faq-item {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 10px; overflow: hidden;
+}
+.faq-q {
+  padding: 14px 20px; background: var(--card-bg); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 600; font-size: 15px;
+}
+.faq-q:hover { background: var(--primary-bg); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+  font-size: 14px; color: var(--text-light); line-height: 1.8;
+}
+.faq-item.open .faq-a { max-height: 500px; padding: 0 20px 16px; }
+
+.footer {
+  text-align: center; padding: 40px 20px; border-top: 1px solid var(--border);
+  margin-top: 60px; font-size: 13px; color: var(--text-light);
+}
+.footer a { color: var(--primary); text-decoration: none; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  .main { margin-left: 0; padding: 24px 16px; }
+  .menu-btn { display: block; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .flow-diagram { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+@media (max-width: 500px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 24px; }
+  .compare-table { font-size: 12px; }
+  .compare-table th, .compare-table td { padding: 8px 10px; }
+}
+
+.overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 850;
+}
+.overlay.show { display: block; }
+
+.back-top {
+  position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px;
+  border-radius: 50%; background: var(--primary); color: #fff;
+  border: none; cursor: pointer; font-size: 18px; z-index: 800;
+  box-shadow: 0 4px 16px rgba(232,101,46,0.3);
+  opacity: 0; transform: translateY(20px); transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.back-top.show { opacity: 1; transform: translateY(0); }
+.back-top:hover { transform: translateY(-3px); }
+
+p { margin-bottom: 12px; }
+h3 { font-size: 19px; font-weight: 700; color: var(--dark); margin: 28px 0 12px; }
+h4 { font-size: 16px; font-weight: 700; color: var(--dark); margin: 20px 0 8px; }
+ul, ol { padding-left: 24px; margin-bottom: 12px; }
+li { margin-bottom: 6px; font-size: 15px; }
+strong { color: var(--dark); }
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="top-bar">
+  <div class="logo">
+    <button class="menu-btn" onclick="toggleSidebar()">&#9776;</button>
+    <div class="icon">M</div>
+    <span>多Agent协同系统</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0%</div>
+  </div>
+</div>
+<nav class="sidebar" id="sidebar">
+  <div class="nav-group"><div class="nav-group-title">课程介绍</div><a class="nav-item active" href="#hero" data-sec="hero"><span class="num">0</span>课程概览</a></div>
+  <div class="nav-group"><div class="nav-group-title">Part 1 · 核心概念</div><a class="nav-item" href="#sec01" data-sec="sec01"><span class="num">1</span>为什么需要多Agent</a><a class="nav-item" href="#sec02" data-sec="sec02"><span class="num">2</span>五种协作模式总览</a></div>
+  <div class="nav-group"><div class="nav-group-title">Part 2 · 协作模式详解</div><a class="nav-item" href="#sec03" data-sec="sec03"><span class="num">3</span>Supervisor层级调度</a><a class="nav-item" href="#sec04" data-sec="sec04"><span class="num">4</span>Hierarchical多层层级</a><a class="nav-item" href="#sec05" data-sec="sec05"><span class="num">5</span>Swarm群体协作</a><a class="nav-item" href="#sec06" data-sec="sec06"><span class="num">6</span>Sequential Chain流水线</a><a class="nav-item" href="#sec07" data-sec="sec07"><span class="num">7</span>Network对等网络</a></div>
+  <div class="nav-group"><div class="nav-group-title">Part 3 · 实战与协议</div><a class="nav-item" href="#sec08" data-sec="sec08"><span class="num">8</span>智能开发团队实战</a><a class="nav-item" href="#sec09" data-sec="sec09"><span class="num">9</span>通信协议A2A与MCP</a></div>
+  <div class="nav-group"><div class="nav-group-title">Part 4 · 安全与挑战</div><a class="nav-item" href="#sec10" data-sec="sec10"><span class="num">10</span>多Agent安全</a><a class="nav-item" href="#sec11" data-sec="sec11"><span class="num">11</span>关键挑战与决策</a></div>
+  <div class="nav-group"><div class="nav-group-title">总结</div><a class="nav-item" href="#sec12" data-sec="sec12"><span class="num">12</span>本章小结</a><a class="nav-item" href="#faq" data-sec="faq"><span class="num">?</span>常见问题</a></div>
+</nav>
+<main class="main">
+<section class="hero" id="hero">
+  <div class="badge">LangGraph · AutoGen · 2026年9月</div>
+  <h1>AI Agent零基础到精通<br><span>多Agent协同</span></h1>
+  <p class="subtitle">从五种协作模式到两大通信协议<br>构建生产级多Agent系统的完整指南</p>
+  <div class="meta"><span>&#127991;&#65039; Supervisor · Swarm · A2A · MCP</span><span>&#128101; 开发者 &amp; AI架构师</span></div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">协作模式</div></div>
+    <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">通信协议</div></div>
+    <div class="stat-card"><div class="stat-num">2-5x</div><div class="stat-label">Token开销倍数</div></div>
+    <div class="stat-card"><div class="stat-num">150+</div><div class="stat-label">A2A参与组织</div></div>
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">安全威胁类型</div></div>
+  </div>
+</section>
+
+<section class="section" id="sec01">
+  <div class="section-header"><div class="sec-num">01</div><div><h2>为什么需要多Agent？</h2><div class="sec-en">Why Multi-Agent?</div></div></div>
+  <div class="voice-line">一个关键问题：既然普通的函数分工也能拆分任务，为什么还需要多Agent？核心区别在于——每个Agent拥有独立的LLM推理上下文和决策自主性。</div>
+  <h3>函数分工 vs 多Agent</h3>
+  <p>函数分工的模式：主控函数调用函数A，再调用函数B，再调用函数C。每个函数只是被动执行，没有自主决策能力，也无法根据中间结果调整策略。</p>
+  <p>多Agent模式则完全不同：每个Agent都拥有<strong>独立的LLM推理上下文</strong>，可以自主判断该怎么做。Agent A自己推理决策，Agent B也自己推理决策，它们可以根据实际情况动态协作。</p>
+  <div class="flow-diagram"><div class="flow-node secondary">主控函数</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">函数A</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">函数B</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">函数C</div></div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:-16px;">&#8593; 函数分工：被动执行，无法自主决策</p>
+  <div class="flow-diagram"><div class="flow-node primary">Agent A<br><small>独立LLM上下文</small></div><div class="flow-node primary">Agent B<br><small>独立LLM上下文</small></div><div class="flow-node primary">Agent C<br><small>独立LLM上下文</small></div></div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:-16px;">&#8593; 多Agent：自主推理，动态协作</p>
+  <h3>三大优势</h3>
+  <div class="card-grid">
+    <div class="info-card"><div class="card-icon">&#129504;</div><h4>独立推理</h4><p>每个Agent可以独立推理和决策，不需要主控函数预设所有分支。</p></div>
+    <div class="info-card"><div class="card-icon">&#128260;</div><h4>动态协作</h4><p>Agent之间可以根据实际情况动态协作，而非按固定流程执行。</p></div>
+    <div class="info-card"><div class="card-icon">&#127919;</div><h4>上下文聚焦</h4><p>单个Agent的Prompt更聚焦，推理质量更高，上下文窗口不被无关信息挤占。</p></div>
+  </div>
+  <h3>典型场景</h3>
+  <ul><li>复杂任务需要多个专业角色协作（产品经理、架构师、开发、测试）</li><li>任务流程无法预先确定，需要Agent自主判断下一步</li><li>需要并行处理独立子任务以提高效率</li><li>单Agent的上下文窗口不足以承载所有信息</li></ul>
+  <div class="step-nav"><button disabled>&#8592; 上一节</button><button onclick="location.href='#sec02'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec02">
+  <div class="section-header"><div class="sec-num">02</div><div><h2>五种协作模式总览</h2><div class="sec-en">Five Collaboration Patterns</div></div></div>
+  <div class="flow-diagram"><div class="flow-node primary">Supervisor</div><span class="flow-arrow">&#8594;</span><div class="flow-node primary">Hierarchical</div><span class="flow-arrow">&#8594;</span><div class="flow-node primary">Swarm</div><span class="flow-arrow">&#8594;</span><div class="flow-node primary">Sequential</div><span class="flow-arrow">&#8594;</span><div class="flow-node primary">Network</div></div>
+  <div class="card-grid">
+    <div class="info-card"><div class="card-icon">&#128084;</div><h4>Supervisor · 层级调度</h4><p>中央调度Agent分配任务，Sub-Agent执行后汇报。适合动态任务分发、客服分流。</p></div>
+    <div class="info-card"><div class="card-icon">&#127970;</div><h4>Hierarchical · 多层层级</h4><p>多层嵌套的Supervisor结构（Supervisor-of-Supervisors）。适合大规模复杂系统。</p></div>
+    <div class="info-card"><div class="card-icon">&#128029;</div><h4>Swarm · 群体协作</h4><p>Agent之间自主交接控制权（Handoff），无中央调度。适合灵活协作、多角度讨论。</p></div>
+    <div class="info-card"><div class="card-icon">&#128279;</div><h4>Sequential Chain · 顺序流水线</h4><p>固定顺序的流水线，Agent依次处理。适合内容创作、数据处理。</p></div>
+    <div class="info-card"><div class="card-icon">&#127760;</div><h4>Network · 对等网络</h4><p>全连接对等网络，Agent可自由路由。适合高自由度探索型任务。</p></div>
+  </div>
+  <h3>模式横向对比</h3>
+  <table class="compare-table"><thead><tr><th>维度</th><th>Supervisor</th><th>Swarm</th><th>Sequential Chain</th></tr></thead><tbody><tr><td>控制流</td><td>中心化调度</td><td>去中心化自主交接</td><td>固定流水线</td></tr><tr><td>扩展性</td><td>中（Supervisor可能成为瓶颈）</td><td>高（Agent自主路由）</td><td>低（需修改流水线结构）</td></tr><tr><td>Token开销</td><td>中（Supervisor额外开销）</td><td>高（多轮Handoff）</td><td>低（无调度开销）</td></tr><tr><td>容错性</td><td>中（Supervisor单点）</td><td>高（无中心节点）</td><td>低（任一环节失败则中断）</td></tr><tr><td>适用场景</td><td>动态分发、流程不固定</td><td>灵活协作、多角度讨论</td><td>步骤明确、流程固定</td></tr></tbody></table>
+  <div class="step-nav"><button onclick="location.href='#sec01'">&#8592; 上一节</button><button onclick="location.href='#sec03'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec03">
+  <div class="section-header"><div class="sec-num">03</div><div><h2>Supervisor：层级调度</h2><div class="sec-en">Supervisor Pattern</div></div></div>
+  <div class="voice-line">Supervisor模式最直观——就像公司里的项目经理。Supervisor负责分配任务，Sub-Agent执行后汇报结果。有明确的上下级关系。</div>
+  <h3>架构示意</h3>
+  <div class="flow-diagram"><div class="flow-node primary">Supervisor<br><small>任务分配 &amp; 结果整合</small></div></div>
+  <div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node secondary">Researcher<br><small>搜索工具</small></div><div class="flow-node secondary">Analyst<br><small>分析工具</small></div><div class="flow-node secondary">Writer<br><small>写作工具</small></div></div>
+  <h3>代码实现</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="kw">from</span> langgraph_supervisor <span class="kw">import</span> <span class="fn">create_supervisor</span>
+<span class="kw">from</span> langgraph.prebuilt <span class="kw">import</span> <span class="fn">create_react_agent</span>
+
+researcher = <span class="fn">create_react_agent</span>(
+    model, tools=[search_tool], <span class="prop">name</span>=<span class="str">"researcher"</span>,
+    <span class="prop">prompt</span>=<span class="str">"你是一个Researcher，负责搜集和验证信息。"</span>
+)
+analyst = <span class="fn">create_react_agent</span>(
+    model, tools=[analyze_tool], <span class="prop">name</span>=<span class="str">"analyst"</span>,
+    <span class="prop">prompt</span>=<span class="str">"你是一个Analyst，负责数据分析和洞察。"</span>
+)
+writer = <span class="fn">create_react_agent</span>(
+    model, tools=[write_tool], <span class="prop">name</span>=<span class="str">"writer"</span>,
+    <span class="prop">prompt</span>=<span class="str">"你是一个Writer，负责内容创作和报告撰写。"</span>
+)
+supervisor = <span class="fn">create_supervisor</span>(
+    <span class="prop">model</span>=model,
+    <span class="prop">agents</span>=[researcher, analyst, writer],
+    <span class="prop">prompt</span>=<span class="str">"""你是一个Supervisor，负责将任务分配给合适的Worker并整合结果。
+    可用的Worker：
+    - researcher: 负责搜集信息
+    - analyst: 负责数据分析
+    - writer: 负责内容创作"""</span>
+).<span class="fn">compile</span>()
+result = supervisor.<span class="fn">invoke</span>({
+    <span class="str">"messages"</span>: [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"分析AI Agent市场趋势并撰写报告"</span>}]
+})</code></pre></div>
+  <div class="highlight-box key"><div class="hl-title">&#128273; 关键点</div><code>create_supervisor</code> 接收 model、agents 列表和 prompt。prompt 里要明确告诉 Supervisor 有哪些 Worker 可用，各自的职责是什么。</div>
+  <div class="step-nav"><button onclick="location.href='#sec02'">&#8592; 上一节</button><button onclick="location.href='#sec04'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec04">
+  <div class="section-header"><div class="sec-num">04</div><div><h2>Hierarchical：多层层级</h2><div class="sec-en">Hierarchical Pattern</div></div></div>
+  <div class="voice-line">Hierarchical是Supervisor的升级版——多层嵌套。就像大公司：CEO管部门经理，部门经理管员工。适合组织结构复杂、任务规模大的系统。</div>
+  <h3>架构示意</h3>
+  <div class="flow-diagram"><div class="flow-node primary">CEO_Supervisor</div></div>
+  <div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node primary">Tech_Supervisor</div><div class="flow-node primary">Design_Supervisor</div><div class="flow-node secondary">QA</div></div>
+  <div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node secondary">Frontend</div><div class="flow-node secondary">Backend</div><div class="flow-node secondary">UI</div><div class="flow-node secondary">UX</div></div>
+  <h3>代码实现</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="cm"># 中层Supervisor</span>
+tech_supervisor = <span class="fn">create_supervisor</span>(
+    <span class="prop">model</span>=model, <span class="prop">agents</span>=[frontend, backend],
+    <span class="prop">prompt</span>=<span class="str">"你是技术团队负责人，协调前端和后端开发。"</span>
+).<span class="fn">compile</span>()
+design_supervisor = <span class="fn">create_supervisor</span>(
+    <span class="prop">model</span>=model, <span class="prop">agents</span>=[ui, ux],
+    <span class="prop">prompt</span>=<span class="str">"你是设计团队负责人，协调UI和UX设计。"</span>
+).<span class="fn">compile</span>()
+<span class="cm"># 高层Supervisor（CEO）—— 嵌套的关键</span>
+ceo_supervisor = <span class="fn">create_supervisor</span>(
+    <span class="prop">model</span>=model,
+    <span class="prop">agents</span>=[tech_supervisor, design_supervisor, qa],
+    <span class="prop">prompt</span>=<span class="str">"你是CEO，协调技术团队、设计团队和QA完成项目。"</span>
+).<span class="fn">compile</span>()</code></pre></div>
+  <div class="highlight-box key"><div class="hl-title">&#128273; 嵌套的关键</div>中层 Supervisor 编译后，直接作为 Agent 传入高层 Supervisor 的 agents 列表。这就是嵌套的核心。</div>
+  <div class="step-nav"><button onclick="location.href='#sec03'">&#8592; 上一节</button><button onclick="location.href='#sec05'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec05">
+  <div class="section-header"><div class="sec-num">05</div><div><h2>Swarm：群体协作</h2><div class="sec-en">Swarm Pattern</div></div></div>
+  <div class="voice-line">Swarm模式和Supervisor完全不同——没有老板，所有Agent地位平等。它们通过Handoff机制自主交接控制权。就像接力赛：Researcher跑完自己的部分，把接力棒交给Critic。</div>
+  <h3>架构示意</h3>
+  <div class="flow-diagram"><div class="flow-node primary">Researcher<br><small>&#8594; handoff_to_critic</small></div><span class="flow-arrow">&#8644;</span><div class="flow-node primary">Critic<br><small>&#8594; handoff_to_writer/researcher</small></div><span class="flow-arrow">&#8644;</span><div class="flow-node primary">Writer<br><small>&#8594; handoff_to_researcher</small></div></div>
+  <h3>代码实现（LangGraph Swarm）</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="kw">from</span> langgraph_swarm <span class="kw">import</span> <span class="fn">create_swarm</span>, <span class="fn">create_handoff_tool</span>
+
+<span class="cm"># 定义Handoff工具——允许Agent之间交接控制权</span>
+handoff_to_critic = <span class="fn">create_handoff_tool</span>(
+    <span class="prop">agent_name</span>=<span class="str">"Critic"</span>,
+    <span class="prop">description</span>=<span class="str">"将控制权交接给Critic，请其评价和改进方案"</span>
+)
+researcher = <span class="fn">create_react_agent</span>(
+    model, tools=[search_tool, handoff_to_critic],
+    <span class="prop">name</span>=<span class="str">"Researcher"</span>,
+    <span class="prop">prompt</span>=<span class="str">"完成研究后，将控制权交接给Critic。"</span>
+)
+swarm = <span class="fn">create_swarm</span>(
+    [researcher, critic, writer],
+    <span class="prop">default_active_agent</span>=<span class="str">"Researcher"</span>
+).<span class="fn">compile</span>()</code></pre></div>
+  <h3>AutoGen实现对比</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="kw">from</span> autogen_agentchat.teams <span class="kw">import</span> <span class="cls">RoundRobinGroupChat</span>
+team = <span class="cls">RoundRobinGroupChat</span>([researcher, critic, writer], <span class="prop">max_turns</span>=<span class="num">6</span>)</code></pre></div>
+  <div class="highlight-box warn"><div class="hl-title">&#9888;&#65039; 注意</div>AutoGen 的 <code>RoundRobinGroupChat</code> 是轮询式讨论，与 LangGraph Swarm 的自主交接机制有本质区别。Swarm 是 Agent 自主决定交接，RoundRobin 是按固定顺序轮流发言。如需真正的 Swarm 行为，应使用 <code>SelectorGroupChat</code>。</div>
+  <div class="step-nav"><button onclick="location.href='#sec04'">&#8592; 上一节</button><button onclick="location.href='#sec06'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec06">
+  <div class="section-header"><div class="sec-num">06</div><div><h2>Sequential Chain：顺序流水线</h2><div class="sec-en">Sequential Chain Pattern</div></div></div>
+  <div class="voice-line">Sequential Chain最简单——固定顺序的流水线。每个Agent负责一个阶段，处理完传给下一个。适合步骤明确的任务。</div>
+  <h3>架构示意</h3>
+  <div class="flow-diagram"><div class="flow-node secondary">Research</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">Outline</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">Draft</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">Editor</div><span class="flow-arrow">&#8594;</span><div class="flow-node secondary">SEO</div></div>
+  <h3>代码实现</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="kw">from</span> langgraph.graph <span class="kw">import</span> <span class="cls">StateGraph</span>, START, END
+
+<span class="kw">class</span> <span class="cls">ContentState</span>(<span class="cls">TypedDict</span>):
+    topic: <span class="cls">str</span>
+    sources: <span class="cls">str</span>
+    outline: <span class="cls">str</span>
+    draft: <span class="cls">str</span>
+    final_content: <span class="cls">str</span>
+    seo_content: <span class="cls">str</span>
+
+graph = <span class="cls">StateGraph</span>(ContentState)
+graph.<span class="fn">add_node</span>(<span class="str">"research"</span>, research_node)
+graph.<span class="fn">add_node</span>(<span class="str">"outline"</span>, outline_node)
+<span class="cm"># ... 其他节点</span>
+<span class="cm"># 定义顺序边——一条直线走到底</span>
+graph.<span class="fn">add_edge</span>(START, <span class="str">"research"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"research"</span>, <span class="str">"outline"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"outline"</span>, <span class="str">"draft"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"draft"</span>, <span class="str">"editor"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"editor"</span>, <span class="str">"seo"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"seo"</span>, END)</code></pre></div>
+  <div class="highlight-box key"><div class="hl-title">&#128273; 关键</div>用 <code>add_edge</code> 定义固定的执行顺序。没有条件分支，没有动态路由，就是一条直线走到底。</div>
+  <div class="step-nav"><button onclick="location.href='#sec05'">&#8592; 上一节</button><button onclick="location.href='#sec07'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec07">
+  <div class="section-header"><div class="sec-num">07</div><div><h2>Network：对等网络</h2><div class="sec-en">Network Pattern</div></div></div>
+  <div class="voice-line">Network模式最自由——Agent之间全连接，可以自由路由到任意其他Agent。没有固定的调度者，也没有固定的流程。实现方式是加一个路由节点，由LLM决定下一步交给谁。</div>
+  <h3>架构示意</h3>
+  <div class="flow-diagram"><div class="flow-node secondary">Planner</div><span class="flow-arrow">&#8644;</span><div class="flow-node primary">Router<br><small>LLM决策路由</small></div><span class="flow-arrow">&#8644;</span><div class="flow-node secondary">Executor</div></div>
+  <div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node secondary">Reviewer</div></div>
+  <h3>代码实现</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="cm"># 路由函数：由LLM决定下一个Agent</span>
+<span class="kw">def</span> <span class="fn">router_node</span>(state: NetworkState) -> dict:
+    result = model.<span class="fn">invoke</span>([
+        HumanMessage(<span class="prop">content</span>=<span class="str">f"根据对话决定下一个Agent：planner/executor/reviewer/END"</span>)
+    ])
+    choice = result.content.strip().lower()
+    <span class="kw">if</span> choice == <span class="str">"end"</span>:
+        <span class="kw">return</span> {<span class="str">"next_agent"</span>: <span class="str">"END"</span>}
+    <span class="kw">return</span> {<span class="str">"next_agent"</span>: choice}
+
+<span class="cm"># 条件路由</span>
+graph.<span class="fn">add_conditional_edges</span>(<span class="str">"router"</span>, route_decision, {
+    <span class="str">"planner"</span>: <span class="str">"planner"</span>,
+    <span class="str">"executor"</span>: <span class="str">"executor"</span>,
+    <span class="str">"reviewer"</span>: <span class="str">"reviewer"</span>,
+    <span class="str">"END"</span>: END,
+})</code></pre></div>
+  <div class="highlight-box tip"><div class="hl-title">&#128161; 生产建议</div>路由函数依赖 LLM 返回精确的 Agent 名称，实际生产中建议使用结构化输出（<code>with_structured_output</code>）确保路由可靠性，避免 LLM 返回格式不一致导致路由失败。</div>
+  <div class="step-nav"><button onclick="location.href='#sec06'">&#8592; 上一节</button><button onclick="location.href='#sec08'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec08">
+  <div class="section-header"><div class="sec-num">08</div><div><h2>实战案例：智能软件开发团队</h2><div class="sec-en">Case Study: AI Dev Team</div></div></div>
+  <div class="voice-line">把前面学的知识串起来，做一个完整的实战案例——用Supervisor模式搭建一个智能软件开发团队。这个案例有两个关键特性：重试限制和人工审批断点。</div>
+  <div class="scenario-card"><div class="scenario-header"><h3>智能软件开发团队</h3><p>Supervisor模式 · 6个角色Agent · 重试限制 · 人工审批断点</p></div><div class="scenario-body"><div class="flow-diagram"><div class="flow-node primary">Supervisor<br><small>协调调度</small></div></div><div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node secondary">PM</div><div class="flow-node secondary">Architect</div><div class="flow-node secondary">Frontend</div><div class="flow-node secondary">Backend</div></div><div class="flow-diagram" style="margin-top:-8px;"><div class="flow-node" style="background:#fff3e0;color:#e8652e;border:1px solid #e8652e;">Reviewer<br><small>&#9208;&#65039; 人工审批断点</small></div><div class="flow-node secondary">Tester</div></div></div></div>
+  <h3>代码实现</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code>MAX_RETRIES = <span class="num">3</span>
+supervisor = <span class="fn">create_supervisor</span>(
+    <span class="prop">model</span>=model,
+    <span class="prop">agents</span>=[pm, architect, frontend, backend, reviewer, tester],
+    <span class="prop">prompt</span>=<span class="str">f"""按以下顺序调度：
+    1. pm分析需求 &#8594; 2. architect设计系统 &#8594; 3. 开发 &#8594;
+    4. reviewer审查 &#8594; 5. tester测试
+    如果审查或测试不通过，最多重试{MAX_RETRIES}次。"""</span>
+).<span class="fn">compile</span>(
+    <span class="prop">checkpointer</span>=InMemorySaver(),
+    <span class="prop">interrupt_after</span>=[<span class="str">"reviewer"</span>]
+)
+result = supervisor.<span class="fn">invoke</span>(
+    {<span class="str">"messages"</span>: [...]},
+    <span class="prop">config</span>={<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"dev-1"</span>}}
+)
+result = supervisor.<span class="fn">invoke</span>(
+    <span class="kw">None</span>,
+    <span class="prop">config</span>={<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"dev-1"</span>}}
+)</code></pre></div>
+  <div class="highlight-box key"><div class="hl-title">&#128273; 两个关键特性</div><strong>重试限制</strong>：Supervisor 的 prompt 中指定最多重试 3 次，避免无限循环。<br><strong>人工审批断点</strong>：<code>interrupt_after=["reviewer"]</code> 让 reviewer 完成后暂停，等待人类确认。这是生产级系统的必备机制。</div>
+  <div class="step-nav"><button onclick="location.href='#sec07'">&#8592; 上一节</button><button onclick="location.href='#sec09'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec09">
+  <div class="section-header"><div class="sec-num">09</div><div><h2>通信协议：A2A与MCP</h2><div class="sec-en">Communication Protocols</div></div></div>
+  <div class="voice-line">A2A管Agent之间怎么对话，MCP管Agent怎么用工具。一个是横向协作层，一个是纵向工具层，两者互补，不是竞争关系。</div>
+  <div class="card-grid"><div class="info-card"><div class="card-icon">&#129309;</div><h4>A2A · Agent-to-Agent</h4><p>Google发布的开放协议，解决不同框架/厂商Agent之间的互操作问题。已有150+组织参与，发布v1.0稳定版。</p></div><div class="info-card"><div class="card-icon">&#128295;</div><h4>MCP · Model Context Protocol</h4><p>Anthropic发布的开放协议，标准化Agent与外部工具/数据源的连接。架构：Host &#8596; Client &#8596; Server。</p></div></div>
+  <h3>A2A核心概念</h3>
+  <table class="compare-table"><thead><tr><th>概念</th><th>说明</th></tr></thead><tbody><tr><td><strong>Agent Card</strong></td><td>Agent的"名片"，JSON格式，发布在 <code>/.well-known/agent.json</code>，描述能力、端点、认证方式</td></tr><tr><td><strong>Task</strong></td><td>交互的基本单元，生命周期：submitted &#8594; working &#8594; completed/failed</td></tr><tr><td><strong>Message</strong></td><td>Agent间交互的标准化信封，基于JSON-RPC 2.0</td></tr><tr><td><strong>v1.0特性</strong></td><td>Signed Agent Cards（密码学签名验证Agent身份）</td></tr></tbody></table>
+  <h3>MCP三种能力</h3>
+  <table class="compare-table"><thead><tr><th>能力</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><strong>Tools</strong></td><td>Agent可调用的函数/工具</td><td>数据库查询、API调用</td></tr><tr><td><strong>Resources</strong></td><td>Agent可读取的数据/文件</td><td>配置文件、日志</td></tr><tr><td><strong>Prompts</strong></td><td>预定义的提示词模板</td><td>代码审查模板</td></tr></tbody></table>
+  <div class="highlight-box tip"><div class="hl-title">&#128161; 一句话总结</div><strong>A2A = Agent &#8596; Agent</strong>（横向协作层），<strong>MCP = Agent &#8596; Tool</strong>（纵向工具层），两者互补，不是竞争关系。</div>
+  <div class="step-nav"><button onclick="location.href='#sec08'">&#8592; 上一节</button><button onclick="location.href='#sec10'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec10">
+  <div class="section-header"><div class="sec-num">10</div><div><h2>多Agent安全</h2><div class="sec-en">Multi-Agent Security</div></div></div>
+  <div class="voice-line">多Agent的安全问题是首要障碍，不是普通挑战。Agent链的传播效应会放大单点安全问题——一个Agent被注入恶意指令，可能通过Handoff传播到整个系统。</div>
+  <h3>五大威胁</h3>
+  <table class="compare-table"><thead><tr><th>威胁类型</th><th>描述</th><th>防护措施</th></tr></thead><tbody><tr><td><strong>Prompt Injection传播</strong></td><td>恶意输入通过Agent链放大传播</td><td>输入验证、消息签名、上下文隔离</td></tr><tr><td><strong>Agent身份伪造</strong></td><td>伪造Agent身份获取未授权访问</td><td>A2A Signed Agent Card</td></tr><tr><td><strong>数据泄漏</strong></td><td>Agent将敏感数据传递给不可信Agent</td><td>数据分级、输出过滤、审计日志</td></tr><tr><td><strong>资源耗尽</strong></td><td>Agent循环调用耗尽Token和计算资源</td><td>Token预算、调用深度限制</td></tr><tr><td><strong>权限越界</strong></td><td>Agent获取超出授权的工具/数据访问</td><td>最小权限原则、工具白名单</td></tr></tbody></table>
+  <h3>安全防护三原则</h3>
+  <div class="card-grid"><div class="info-card"><div class="card-icon">&#128737;&#65039;</div><h4>结构化消息</h4><p>拒绝纯文本，强制Agent间传递结构化数据，防止注入攻击。</p></div><div class="info-card"><div class="card-icon">&#128272;</div><h4>工具白名单</h4><p>每个Agent只能使用授权的工具，遵循最小权限原则。</p></div><div class="info-card"><div class="card-icon">&#128176;</div><h4>Token预算</h4><p>设置Token预算和调用深度限制，防止Agent循环调用耗尽资源。</p></div></div>
+  <h3>防护代码示例</h3>
+  <div class="code-block"><div class="code-header"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><pre><code><span class="kw">class</span> <span class="cls">SecureAgentCommunicator</span>:
+    <span class="kw">def</span> <span class="fn">validate_message</span>(self, message: AgentMessage) -> AgentMessage:
+        <span class="cm"># 1. 验证消息格式（拒绝纯文本，强制结构化）</span>
+        <span class="kw">if not</span> <span class="fn">isinstance</span>(message.content, dict):
+            <span class="kw">raise</span> <span class="cls">SecurityError</span>(<span class="str">"消息内容必须为结构化数据"</span>)
+        <span class="cm"># 2. 验证工具调用权限</span>
+        <span class="kw">if</span> message.message_type == <span class="str">"task"</span>:
+            tools = message.content.<span class="fn">get</span>(<span class="str">"tools"</span>, [])
+            allowed = self.allowed_tools.<span class="fn">get</span>(message.receiver, [])
+            <span class="kw">for</span> tool <span class="kw">in</span> tools:
+                <span class="kw">if</span> tool <span class="kw">not in</span> allowed:
+                    <span class="kw">raise</span> <span class="cls">SecurityError</span>(<span class="str">f"无权使用工具: {tool}"</span>)
+        <span class="kw">return</span> message</code></pre></div>
+  <div class="step-nav"><button onclick="location.href='#sec09'">&#8592; 上一节</button><button onclick="location.href='#sec11'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec11">
+  <div class="section-header"><div class="sec-num">11</div><div><h2>关键挑战与决策矩阵</h2><div class="sec-en">Challenges &amp; Decision Matrix</div></div></div>
+  <div class="voice-line">不要为了多Agent而多Agent。多Agent的Token开销通常是单Agent的2到5倍，必须通过决策矩阵来判断到底值不值得。</div>
+  <h3>三大工程挑战</h3>
+  <div class="accordion">
+    <div class="accordion-item"><div class="accordion-header" onclick="toggleAccordion(this)">挑战1：通信开销 <span class="arrow">&#9660;</span></div><div class="accordion-body"><p>多个Agent之间需要频繁通信，每次通信都可能触发LLM调用。通信开销应控制在总Token的30%以内。</p><p><strong>解决</strong>：使用结构化消息，减少不必要的LLM调用。LangGraph的做法是Sub-Agent的输出直接作为消息传递，Supervisor只在需要决策时调用LLM。</p></div></div>
+    <div class="accordion-item"><div class="accordion-header" onclick="toggleAccordion(this)">挑战2：死锁和循环依赖 <span class="arrow">&#9660;</span></div><div class="accordion-body"><p>两个Agent互相等待，形成死锁。</p><p><strong>解决</strong>：设置超时和递归深度限制。调用链深度不应超过10层。</p></div></div>
+    <div class="accordion-item"><div class="accordion-header" onclick="toggleAccordion(this)">挑战3：结果冲突 <span class="arrow">&#9660;</span></div><div class="accordion-body"><p>不同Agent给出不同的答案，需要仲裁。</p><p><strong>解决</strong>：投票或仲裁机制。加权投票按置信度汇总，专家仲裁由指定Agent做最终裁决。</p></div></div>
+  </div>
+  <h3>何时使用多Agent：决策矩阵</h3>
+  <table class="compare-table"><thead><tr><th>任务特征</th><th>单Agent</th><th>多Agent</th></tr></thead><tbody><tr><td>步骤固定、无需动态决策</td><td>&#9989; 推荐</td><td>&#10060; 过度设计</td></tr><tr><td>需要多个专业角色协作</td><td>&#10060; 上下文混乱</td><td>&#9989; 推荐</td></tr><tr><td>任务流程无法预先确定</td><td>&#10060; 无法覆盖所有分支</td><td>&#9989; 推荐</td></tr><tr><td>单次交互即可完成</td><td>&#9989; 推荐</td><td>&#10060; 通信开销不划算</td></tr><tr><td>需要并行处理独立子任务</td><td>&#10060; 串行效率低</td><td>&#9989; 推荐</td></tr><tr><td>对成本敏感、对质量要求一般</td><td>&#9989; 推荐</td><td>&#10060; Token开销高2-5x</td></tr></tbody></table>
+  <h3>性能基准</h3>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num">&gt;80%</div><div class="stat-label">任务完成率</div></div>
+    <div class="stat-card"><div class="stat-num">&lt;30%</div><div class="stat-label">通信开销占比</div></div>
+    <div class="stat-card"><div class="stat-num">&lt;30s</div><div class="stat-label">简单任务延迟</div></div>
+    <div class="stat-card"><div class="stat-num">&lt;5min</div><div class="stat-label">复杂任务延迟</div></div>
+    <div class="stat-card"><div class="stat-num">&#8804;10</div><div class="stat-label">调用链深度上限</div></div>
+  </div>
+  <div class="step-nav"><button onclick="location.href='#sec10'">&#8592; 上一节</button><button onclick="location.href='#sec12'">下一节 &#8594;</button></div>
+</section>
+
+<section class="section" id="sec12">
+  <div class="section-header"><div class="sec-num">12</div><div><h2>本章小结</h2><div class="sec-en">Chapter Summary</div></div></div>
+  <div class="card-grid">
+    <div class="info-card"><div class="card-icon">1</div><h4>核心价值</h4><p>每个Agent拥有独立的LLM推理上下文和决策自主性，这是区别于普通函数分工的根本所在。</p></div>
+    <div class="info-card"><div class="card-icon">2</div><h4>五种协作模式</h4><p>Supervisor（中心调度）、Hierarchical（多层嵌套）、Swarm（自主交接）、Sequential Chain（固定流水线）、Network（自由路由），根据任务特征选择。</p></div>
+    <div class="info-card"><div class="card-icon">3</div><h4>两大通信协议</h4><p>A2A解决Agent间互操作（横向），MCP解决Agent与工具的连接（纵向），两者互补。</p></div>
+    <div class="info-card"><div class="card-icon">4</div><h4>安全是首要障碍</h4><p>多Agent的传播效应会放大安全问题，必须在设计阶段就引入防护措施。</p></div>
+    <div class="info-card"><div class="card-icon">5</div><h4>成本权衡</h4><p>多Agent的Token开销通常是单Agent的2-5倍，需通过决策矩阵判断是否值得。</p></div>
+  </div>
+  <div class="step-nav"><button onclick="location.href='#sec11'">&#8592; 上一节</button><button onclick="location.href='#faq'">FAQ &#8594;</button></div>
+</section>
+
+<section class="section faq-section" id="faq">
+  <div class="section-header"><div class="sec-num">?</div><div><h2>常见问题</h2><div class="sec-en">FAQ</div></div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Supervisor和Swarm该选哪个？ <span style="float:right">&#9660;</span></div><div class="faq-a">如果任务流程相对确定、需要集中调度，选Supervisor。如果需要多角度讨论、Agent之间需要灵活交接，选Swarm。简单来说：有老板选Supervisor，没老板选Swarm。</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">多Agent的Token开销怎么控制？ <span style="float:right">&#9660;</span></div><div class="faq-a">三个关键策略：1）使用结构化消息减少不必要的LLM调用；2）设置Token预算和调用深度限制；3）通信开销控制在总Token的30%以内。如果简单任务用单Agent就能完成，不要为了多Agent而多Agent。</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">A2A和MCP是什么关系？ <span style="float:right">&#9660;</span></div><div class="faq-a">互补关系，不是竞争关系。A2A解决Agent之间的互操作问题（横向协作层），MCP解决Agent与外部工具的连接问题（纵向工具层）。一个管Agent间对话，一个管Agent用工具。</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Sequential Chain和普通Pipeline有什么区别？ <span style="float:right">&#9660;</span></div><div class="faq-a">关键区别在于每个节点是一个拥有独立LLM推理上下文的Agent，而不是一个简单的函数。这意味着每个阶段都可以自主推理和决策，而不是机械地执行预设逻辑。</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">如何防止Agent之间的Prompt Injection传播？ <span style="float:right">&#9660;</span></div><div class="faq-a">核心策略：1）强制Agent间传递结构化数据，拒绝纯文本；2）对输入进行验证和清洗；3）使用消息签名验证来源；4）上下文隔离，限制Agent可访问的信息范围。</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Network模式的路由可靠性怎么保证？ <span style="float:right">&#9660;</span></div><div class="faq-a">路由函数依赖LLM返回精确的Agent名称，建议使用结构化输出（with_structured_output）确保路由可靠性。同时设置兜底机制：如果路由失败，默认回到Supervisor或结束。</div></div>
+</section>
+
+<footer class="footer">AI Agent 零基础到精通 · 第四章 · 多Agent协同系统设计</footer>
+</main>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
+
+<script>
+function toggleSidebar(){const sb=document.getElementById('sidebar');const ov=document.getElementById('overlay');sb.classList.toggle('open');ov.classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+function toggleAccordion(el){const item=el.parentElement;const body=item.querySelector('.accordion-body');const isOpen=item.classList.contains('open');item.classList.toggle('open');if(isOpen){body.style.maxHeight='0'}else{body.style.maxHeight=body.scrollHeight+'px'}}
+function toggleFaq(el){el.parentElement.classList.toggle('open')}
+function copyCode(btn){const code=btn.closest('.code-block').querySelector('code');const text=code.textContent;if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(()=>{btn.textContent='已复制!';setTimeout(()=>btn.textContent='复制',1500)})}else{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');btn.textContent='已复制!';setTimeout(()=>btn.textContent='复制',1500)}catch(e){btn.textContent='复制失败';setTimeout(()=>btn.textContent='复制',1500)}document.body.removeChild(ta)}}
+const sections=document.querySelectorAll('.section, .hero');
+const navItems=document.querySelectorAll('.nav-item');
+function updateProgress(){const scrollTop=window.scrollY;const docHeight=document.documentElement.scrollHeight-window.innerHeight;const pct=Math.min(100,Math.round((scrollTop/docHeight)*100));document.getElementById('progressFill').style.width=pct+'%';document.getElementById('progressText').textContent=pct+'%'}
+function updateActiveNav(){
+  const offset=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+  let current='hero';
+  sections.forEach(sec=>{if(sec.getBoundingClientRect().top<=offset+1){current=sec.id}});
+  // The final section may not have enough content below it to reach the offset.
+  if(window.scrollY>0&&window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-1){current=sections[sections.length-1].id}
+  navItems.forEach(item=>{item.classList.toggle('active',item.getAttribute('data-sec')===current)});
+}
+function updateBackTop(){document.getElementById('backTop').classList.toggle('show',window.scrollY>400)}
+window.addEventListener('scroll',()=>{updateProgress();updateActiveNav();updateBackTop()},{passive:true});
+window.addEventListener('load',updateActiveNav);
+window.addEventListener('resize',updateActiveNav);
+navItems.forEach(item=>{item.addEventListener('click',()=>{if(window.innerWidth<=900)closeSidebar()})});
+updateProgress();updateActiveNav();
+</script>
+</body>
+</html>

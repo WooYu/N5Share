@@ -1,6 +1,6 @@
 # N5Share · 高级推理框架与多 Agent 协作
 
-面向 Java 后端、前端、客户端开发者的 48 页、90 分钟中文培训。先用“周末出游”理解七个能力阶段，再连续讲解多 Agent 流程、设计方法、协作模型与“接单前资料初审和专家辅助”案例。保留离线 HTML 演示形式。
+面向 Java 后端、前端、客户端开发者的 42 页、90 分钟中文培训。先看七种架构地图，再用“周末出游”和远程诊断演示验证各架构的决策、分工、共享状态与编排。保留离线 HTML 演示形式。
 
 ## 查看培训
 
@@ -10,7 +10,6 @@
 - [运行说明、练习与验收](agent-training/README.md)
 - [选型、协作设计与中英术语速查](agent-training/design-card.md)
 - [资料来源与框架维护状态](agent-training/sources.md)
-- [完整培训包](Agent-Training-HTML-Demo.zip)
 
 ## Studio 对比入口
 
@@ -18,17 +17,17 @@
 
 ## 内容主线
 
-1. 开场与目标 · 2 分 30 秒
-2. Agent 基础 · 2 分 30 秒
-3. 能力演进 · 17 分 50 秒
-4. 多 Agent 流程概念 · 14 分 40 秒
-5. 多 Agent 设计方法 · 19 分 40 秒
-6. 协作模型与实现 · 14 分钟
-7. 案例演示与复盘 · 18 分 50 秒
+1. 开场与目标 · 2 分钟
 
-前 3 页为封面、90 分钟安排与学习路线，第 04 页开始能力演进。每个能力阶段先看一页概念图，再进入对应演示。七个互动演示依次为 LLM、RAG、Tool Calling、ReAct、Plan-and-Execute、Plan-and-Execute + Reflexion、Multi-Agent，都使用周末出游任务，可选择晴天/雨天和 300/200/100 元预算。“下一步演示”使用本地规则示意；“真实模型演示”通过 CCSwitch 当前供应商与官方 Codex CLI 生成行动和答案，工具仍读取合成资料。
+2. 能力演进 · 20 分 50 秒
+3. 多 Agent 流程概念 · 14 分 40 秒
+4. 多 Agent 设计方法 · 19 分 40 秒
+5. 协作模型与实现 · 14 分钟
+6. 案例演示与复盘 · 18 分 50 秒
 
-第 18 页以后不再重复前半段的能力定义。流程概念先解释生命周期、控制流、数据流、上下文、状态、同步和停止；设计方法再把同一任务逐步转换成依赖图、角色接口、工具权限、消息契约和共享状态。随后比较 Supervisor、Parallel、Handoff/Swarm、Review 与 Hierarchical，并用 LangGraph 映射为显式状态图。最后六页始终使用同一张远程诊断工单完成基线、三种短演示、综合运行和复盘。
+第 2–4 页展示七种架构，第 5–11 页按同一①–⑦顺序逐页演示：单 Agent、ReAct、规划执行、多 Agent、Router + Skill、Blackboard、Graph / Workflow。LLM / RAG / 工具能力合并到①，Reflexion合并到③；⑤按输入意图加载技能，⑥按黑板状态触发角色，⑦按显式节点与条件边执行。七页共用天气与预算；“下一步演示”为本地规则示意，第 5–8 页另有真实模型入口，第 9–11 页不调用模型。
+
+第 12 页进入多 Agent 系统设计：把④角色分工、⑥共享状态和⑦图编排对应到生命周期、消息、同步与停止。随后比较 Supervisor、Parallel、Handoff/Swarm、Review 与 Hierarchical，并用 LangGraph 实现。最后六页使用同一张远程诊断工单验证固定基线、分派、并行、评审和综合流程。当前共享状态借鉴 Blackboard，仍由图显式调度。
 
 能力演进明确讲解 Thought-Action-Observation 循环、先规划再执行与失败后的自我修正，并比较 Supervisor、层次化、Swarm 的控制权及 Agent 间通信与共享状态。真实模型的运行方法、课堂提示词、工具执行要求和演示边界见[大模型演示指南](agent-training/model-demo-guide.md)。
 
@@ -48,7 +47,7 @@ python -m venv .venv
 
 浏览器打开 http://127.0.0.1:8765，从目录进入“诊断运行台”。也可安装后双击 agent-training/start-demo.cmd。
 
-诊断运行台使用规则模拟决策，真实运行 LangGraph 编排与只读仿真工具。能力演进第 05、07、09、11、13、15、17 页可点击“真实模型演示”，支持七阶段及 Supervisor / 层次化 / Swarm，显示模型、调用次数、token 和实际过程。当前凭据仅允许官方 Codex 客户端，程序实际调用官方 CLI，不向浏览器提供密钥；每次运行按供应商规则产生用量。工作流基线加四种协作模式，共五种模式、五种情景、25 份预录轨迹。运行台提供中文故事线、角色图、当前已观察证据、修订前后对照、可展开的事件 JSON、最终报告与状态。“基线与三种模式”同情景比较 `workflow / supervisor / parallel / review`，`integrated` 用于综合案例。基线补读是预设分支，计划保持 v1、修订为 0，无 Revision/Dispatch。
+诊断运行台使用规则模拟决策，真实运行 LangGraph 编排与只读仿真工具。能力演进第 05–08 页可点击“真实模型演示”，支持单角色工具、ReAct、规划与反思及 Supervisor / 层次化 / Swarm，显示模型、调用次数、token 和实际过程。当前凭据仅允许官方 Codex 客户端，程序实际调用官方 CLI，不向浏览器提供密钥；每次运行按供应商规则产生用量。工作流基线加四种协作模式，共五种模式、五种情景、25 份预录轨迹。运行台提供中文故事线、角色图、当前已观察证据、修订前后对照、可展开的事件 JSON、最终报告与状态。“基线与三种模式”同情景比较 `workflow / supervisor / parallel / review`，`integrated` 用于综合案例。基线补读是预设分支，计划保持 v1、修订为 0，无 Revision/Dispatch。
 
 能力演进支持 DeepSeek 官方接口 `deepseek-flash` 作为备用，主接口连接失败或超时等异常会显式切换并保留当前状态。凭据保存在本机受保护存储中，不随培训包分发。
 
@@ -64,3 +63,12 @@ python -m venv .venv
 本课选择 LangGraph 是为了显式展示状态、分支、汇合与回路；领域规则、权限、预算和恢复仍需自己实现。消息团队与对话委派需求可评估 AutoGen，角色 SOP 与独立产物需求可评估 MetaGPT；先确定服务边界，不假设各语言 SDK 能力对等。
 
 官方资料核对于 2026-09-21：AutoGen 已进入维护模式，其官方推荐新项目评估 Microsoft Agent Framework。MetaGPT README 的 Python 范围为 ≥3.9 且 <3.12，采用前另核对依赖，不与主 Demo 混装。
+
+## 多Agent可运行实训版
+
+- [运行说明](multi-agent-training/README.md)
+- [培训讲义](multi-agent-training/培训讲义.md)
+- [Word培训文档](multi-agent-training/培训讲义.docx)
+- [验证范围](multi-agent-training/验证报告.md)
+
+使用Node.js 22+，双击 `multi-agent-training/一键离线演练.cmd` 即可运行离线演练。Python框架与真实API的验证状态见运行说明。本目录不再保留ZIP分发包。

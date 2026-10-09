@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Supervisor: Live trace",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-u", "-X", "utf8", "python/labs.py", "--lab", "supervisor", "--trace", "--ask-key", "--recursion-limit", "40", "--topic", "Write a short Chinese report comparing multi-agent collaboration patterns using local sources; retain source IDs."],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": { "DEEPSEEK_MODEL": "deepseek-chat", "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "echo": false },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supervisor: Detailed trace",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-u", "-X", "utf8", "python/labs.py", "--lab", "supervisor", "--trace", "--trace-details", "--ask-key", "--recursion-limit", "40", "--topic", "Write a short Chinese report comparing multi-agent collaboration patterns using local sources; retain source IDs."],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": { "DEEPSEEK_MODEL": "deepseek-chat", "LANGSMITH_TRACING": "false", "LANGCHAIN_TRACING_V2": "false" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "echo": false },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supervisor: Replay",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-u", "-X", "utf8", "python/labs.py", "--replay"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "echo": false },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supervisor: Check",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-X", "utf8", "python/labs.py", "--lab", "supervisor", "--check"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "echo": false },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "mode": "network",
+  "backend": "offline-simulation",
+  "status": "step_limit",
+  "topic": "AI Agent协作模式选型",
+  "events": [
+    {
+      "kind": "tool",
+      "agent": "researcher",
+      "tool": "local_search",
+      "sources": [
+        "source-01",
+        "source-02",
+        "source-03",
+        "source-04",
+        "source-05",
+        "source-06",
+        "source-07"
+      ]
+    },
+    {
+      "kind": "worker",
+      "agent": "researcher",
+      "step": 1
+    },
+    {
+      "kind": "route",
+      "agent": "researcher",
+      "next": "critic"
+    },
+    {
+      "kind": "worker",
+      "agent": "critic",
+      "step": 2
+    },
+    {
+      "kind": "route",
+      "agent": "critic",
+      "next": "researcher"
+    },
+    {
+      "kind": "tool",
+      "agent": "researcher",
+      "tool": "local_search",
+      "sources": [
+        "source-01",
+        "source-02",
+        "source-03",
+        "source-04",
+        "source-05",
+        "source-06",
+        "source-07"
+      ]
+    },
+    {
+      "kind": "worker",
+      "agent": "researcher",
+      "step": 3
+    },
+    {
+      "kind": "route",
+      "agent": "researcher",
+      "next": "critic"
+    },
+    {
+      "kind": "worker",
+      "agent": "critic",
+      "step": 4
+    },
+    {
+      "kind": "route",
+      "agent": "critic",
+      "next": "researcher"
+    }
+  ],
+  "content": "[离线模拟 / critic] AI Agent协作模式选型\n审查意见：资料只能支持协作模式与工程讨论，不能支持市场预测。需验证路由的退出条件、工具是否真正执行、报告是否保留来源。[source-06][source-07]",
+  "reason": "Worker step limit reached",
+  "modelCalls": 0,
+  "tokens": {
+    "prompt": 0,
+    "completion": 0
+  },
+  "results": [
+    {
+      "agent": "researcher",
+      "content": "[离线模拟 / researcher] AI Agent协作模式选型\n已读取7条本地资料；没有互联网搜索。\n[source-01] 多Agent的核心区别：每个真实Agent拥有独立的模型上下文和角色提示词。固定函数分工不等于自主Agent；是否需要多Agent应根据任务复杂度和成本判断。\n[source-02] Supervisor：中央调度Agent分配任务，Worker执行后汇报，适用于动态分发和结果整合。中心节点可能形成调度瓶颈。\n[source-03] Hierarchical：多层Supervisor管理多个子团队。编译后的子图应具有唯一名称，顶层才能区分不同子团队。\n[source-04] Swarm：Agent通过Handoff主动交接控制权，没有统一中央调度。必须设置退出条件与调用上限。轮询式讨论不等于自主交接。\n[source-05] Sequential Chain：研究、提纲、草稿、编辑和SEO按照固定顺序执行。步骤确定时可采用工作流，未必需要自主调度。\n[source-06] Network：对等Agent可自由路由。路由结果要校验，消息要正确合并，并设置步数或递归限制，防止无限循环。\n[source-07] 协议与安全：A2A连接Agent与Agent，MCP连接应用与工具或数据。工具白名单、超时和预算检查需要由执行代码落实；结构化消息不能保证防止提示词注入。"
+    },
+    {
+      "agent": "critic",
+      "content": "[离线模拟 / critic] AI Agent协作模式选型\n审查意见：资料只能支持协作模式与工程讨论，不能支持市场预测。需验证路由的退出条件、工具是否真正执行、报告是否保留来源。[source-06][source-07]"
+    },
+    {
+      "agent": "researcher",
+      "content": "[离线模拟 / researcher] AI Agent协作模式选型\n已读取7条本地资料；没有互联网搜索。\n[source-01] 多Agent的核心区别：每个真实Agent拥有独立的模型上下文和角色提示词。固定函数分工不等于自主Agent；是否需要多Agent应根据任务复杂度和成本判断。\n[source-02] Supervisor：中央调度Agent分配任务，Worker执行后汇报，适用于动态分发和结果整合。中心节点可能形成调度瓶颈。\n[source-03] Hierarchical：多层Supervisor管理多个子团队。编译后的子图应具有唯一名称，顶层才能区分不同子团队。\n[source-04] Swarm：Agent通过Handoff主动交接控制权，没有统一中央调度。必须设置退出条件与调用上限。轮询式讨论不等于自主交接。\n[source-05] Sequential Chain：研究、提纲、草稿、编辑和SEO按照固定顺序执行。步骤确定时可采用工作流，未必需要自主调度。\n[source-06] Network：对等Agent可自由路由。路由结果要校验，消息要正确合并，并设置步数或递归限制，防止无限循环。\n[source-07] 协议与安全：A2A连接Agent与Agent，MCP连接应用与工具或数据。工具白名单、超时和预算检查需要由执行代码落实；结构化消息不能保证防止提示词注入。"
+    },
+    {
+      "agent": "critic",
+      "content": "[离线模拟 / critic] AI Agent协作模式选型\n审查意见：资料只能支持协作模式与工程讨论，不能支持市场预测。需验证路由的退出条件、工具是否真正执行、报告是否保留来源。[source-06][source-07]"
+    }
+  ]
+}

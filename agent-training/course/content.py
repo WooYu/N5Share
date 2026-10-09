@@ -1014,6 +1014,9 @@ add('开场与目标', '课程大纲：从架构到实战',
     seconds=30)
 slides.insert(1, slides.pop())
 
+from speaker_notes import enrich_speaker_notes
+enrich_speaker_notes(slides)
+
 _course_seconds = sum(slide['seconds'] for slide in slides)
 _chapter_seconds = OrderedDict()
 for slide in slides:

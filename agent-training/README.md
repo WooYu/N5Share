@@ -71,6 +71,14 @@ DeepSeek 为主配置，连接异常时明确切换现有 OpenAI/Codex 备用，
 
 页面保持 16:9 投影布局；窄屏整体缩放，推荐桌面演示。讲师备注弹窗与投影共屏，私有备课请在另一设备打开 docs/speaker-notes.md。
 
+讲师备注已为 39 页提供可直接照讲的现场讲稿，并附可展开的概念解释、生活类比、业务实例、常见误区和互动提示。现场时长包含演示与停顿，扩展内容按学员基础选讲；全部讲解时请额外安排时间。
+
+按 **N** 或点击“讲师备注”，展开“术语发音与释义”，可查看本页英文术语的音标、中文含义和解释。点击“听发音”按正常语速朗读，点击“慢速”放慢；也可勾选“全课词库”搜索其他术语。切换术语会停止上一段，关闭备注或切换页面也会停止。
+
+发音使用浏览器与系统的英语语音，不需要配置模型或 API Key；有本机英语语音时可离线使用，部分浏览器语音需要联网。不支持朗读或未安装英语语音时会显示提示，音标与讲稿仍可阅读。Markdown 讲稿保留相同的讲解与术语，听发音请打开网页。
+
+讲稿维护在 course/speaker_notes.py，统一术语在 course/glossary.py；修改后运行 `python build.py` 同步生成网页与 docs/speaker-notes.md。音标以常见美式读法为主，品牌和缩写采用课堂读法。
+
 ## 七种架构的出游演示
 
 第 3 至 5 页介绍七种架构，第 6 至 12 页按①至⑦演示。①包含模型、检索和工具，③加入反馈修订，⑤按需求选择技能，⑥等待共享资料齐备，⑦沿节点和条件边执行。这些方式可以组合。点击“开始演示 / 下一步”查看节点和信息流，“上一步”回看，“重播”恢复起点；底部列出优势、局限和适用场景。“更多”中可改天气、预算、需求，也可查看记录或打开真实模型入口。
@@ -265,6 +273,7 @@ node --test tests/architecture_visuals.test.cjs
 node --test tests/walkthrough_ui.test.cjs
 node --test tests/outing_live_ui.test.cjs
 node --test tests/collaboration_import_ui.test.cjs
+node --test tests/speaker_notes_ui.test.cjs
 .\.venv\Scripts\python.exe build.py
 ```
 

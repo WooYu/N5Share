@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / 'course'))
 from content import CHAPTERS, SOURCES, duration_text, slides
+from glossary import GLOSSARY, PRONUNCIATION_NOTE
 from architectures import OUTING_TRADEOFFS, DIAGNOSIS_TRADEOFFS, ARCHITECTURE_TRADEOFFS
 
 sys.path.insert(0, str(ROOT / 'demo'))
@@ -53,9 +54,11 @@ def build():
     html = (ROOT / 'web/template.html').read_text(encoding='utf-8')
     replacements = {
         '__SLIDES__': '\n'.join(sections), '__COURSE__': json_script(course),
-        '__REPLAY__': json_script(replays), '__PLAYER__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('player.js', 'outing.js', 'outing-live.js', 'collaboration-import.js', 'collaboration-training.js')),
+        '__REPLAY__': json_script(replays), '__PLAYER__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('speaker-notes.js', 'player.js', 'outing.js', 'outing-live.js', 'collaboration-import.js', 'collaboration-training.js')),
+        '__GLOSSARY__': json_script([{'id': key, **value} for key, value in GLOSSARY.items()]),
+        '__PRONUNCIATION_NOTE__': escape(PRONUNCIATION_NOTE),
         '__DEMO_TRADEOFFS__': json_script(dict(outing=OUTING_TRADEOFFS, diagnosis=DIAGNOSIS_TRADEOFFS, architecture=ARCHITECTURE_TRADEOFFS)),
-        '__IMPORT_STYLES__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('collaboration-import.css', 'collaboration-training.css', 'framework-training.css', 'dev-team.css')),
+        '__IMPORT_STYLES__': '\n'.join((ROOT / 'web' / name).read_text(encoding='utf-8') for name in ('collaboration-import.css', 'collaboration-training.css', 'framework-training.css', 'dev-team.css', 'speaker-notes.css')),
     }
     for token, value in replacements.items():
         html = html.replace(token, value)
@@ -66,7 +69,12 @@ def build():
         '备课时打开 [课件](../index.html)，在 VS Code 中运行协作代码。'
         '安装 requirements.txt 后，用 `python demo/run_collaboration.py` 运行五种模式，'
         '用 `python demo/server.py` 启动七种架构的真实模型入口。'
-        'HTML 中的“下一步”使用规则示意和固定课堂资料。\n'
+        'HTML 中的“下一步”使用规则示意和固定课堂资料。\n\n'
+        '每页包含可直接照讲的现场讲稿，以及按需选讲的概念、类比、业务实例、误区和互动。'
+        '原定时长是课堂安排，包含操作与停顿；扩展材料不必全部朗读，初学者课程可增加讲解时间。\n\n'
+        '听发音：打开网页按 N，在“术语发音与释义”中选择“听发音”或“慢速”，'
+        '也可切换全课词库搜索。Markdown 保留音标和释义，播放请使用网页。'
+        + PRONUNCIATION_NOTE + '\n'
     ]
     outline = ['# 高级推理框架与多 Agent 协作 · 培训大纲\n\n'
                f'{course_duration} · Java 后端 / 前端 / 客户端开发者 · 架构与协作模式演示\n\n'
@@ -78,8 +86,14 @@ def build():
                 outline.append(f'- {index + 1:02}. {slide["title"]}（{duration_text(slide["seconds"])}）\n')
     for index, slide in enumerate(slides):
         notes.append(f'\n## {index + 1:02} · {slide["title"]}\n\n{slide["chapter"]} · {duration_text(slide["seconds"])}\n\n{slide["notes"]}\n')
+        notes.append(f'\n### 本页术语\n\n[在网页中打开本页并按 N 听发音](../index.html#{index + 1})\n\n')
+        for term in slide['terms']:
+            notes.append(f'- **{term["label"]} {term["ipa"]}（{term["meaning"]}）**：{term["explanation"]}\n')
         if slide['sources']:
             notes.append('\n来源：' + '；'.join(f'[{SOURCES[key][0]}]({SOURCES[key][1]})' for key in slide['sources']) + '\n')
+    notes.append('\n## 全课术语速查\n\n' + PRONUNCIATION_NOTE + '\n\n')
+    for term in GLOSSARY.values():
+        notes.append(f'- **{term["label"]} {term["ipa"]}（{term["meaning"]}）**：{term["explanation"]}\n')
     (ROOT / 'docs/speaker-notes.md').write_text(''.join(notes), encoding='utf-8')
     (ROOT / 'docs/outline.md').write_text(''.join(outline), encoding='utf-8')
     samples = ROOT / 'test-results/diagnosis-samples'

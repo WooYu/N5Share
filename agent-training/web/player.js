@@ -52,6 +52,7 @@ function stopPlayback() {
 }
 
 function showSlide(index, updateHash = true) {
+  speakerNotes.stop();
   current = Math.max(0, Math.min(COURSE.length - 1, index));
   document.querySelectorAll('.slide').forEach((slide, position) => {
     slide.classList.toggle('active', position === current);
@@ -78,7 +79,7 @@ function openDialog(id) {
 function showNotes() {
   const slide = COURSE[current];
   select('#notesTitle').textContent = `${current + 1} / ${slide.title}`;
-  select('#notesText').textContent = slide.notes;
+  speakerNotes.render(slide);
   select('#notesSources').replaceChildren();
   slide.sources.forEach(source => {
     const link = document.createElement('a');

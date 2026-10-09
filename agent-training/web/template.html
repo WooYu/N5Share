@@ -368,7 +368,24 @@ button.primary:hover{background:#076c70;border-color:#076c70;color:#fff}
 <div id="viewport"><main id="stage" aria-label="培训演示文稿">__SLIDES__</main></div>
 <footer class="bottom-bar"><button id="prevBtn" aria-label="上一页">← 上一页</button><span id="pageNumber" aria-live="polite"></span><button id="nextBtn" aria-label="下一页">下一页 →</button><span class="shortcuts">← → 翻页 · N 讲师备注 · O 目录 · F 全屏 · ? 帮助</span></footer><div class="progress" id="progress"></div>
 <dialog id="tocDialog"><header><h2>课程目录</h2><button data-close="tocDialog">关闭</button></header><div id="tocList"></div></dialog>
-<dialog id="notesDialog"><header><h2 id="notesTitle">讲师备注</h2><button data-close="notesDialog">关闭</button></header><div id="notesText"></div><div id="notesSources"></div></dialog>
+<dialog id="notesDialog" aria-labelledby="notesTitle">
+  <header><h2 id="notesTitle">讲师备注</h2><button data-close="notesDialog">关闭</button></header>
+  <p class="notes-guide">现场讲稿可直接照讲；概念、类比和互动可按学员基础展开。听读英文请打开下方术语区。</p>
+  <details id="notesTermsPanel">
+    <summary>术语发音与释义 <span id="notesTermCount"></span></summary>
+    <p class="notes-pronunciation-note">__PRONUNCIATION_NOTE__</p>
+    <div class="notes-term-toolbar">
+      <label class="notes-search">查找术语<input id="notesTermSearch" type="search" placeholder="例如 Agent、上下文" autocomplete="off"></label>
+      <label class="notes-all"><input id="notesAllTerms" type="checkbox"> 全课词库</label>
+      <button id="notesStopSpeech" type="button" disabled>停止朗读</button>
+    </div>
+    <p id="notesSpeechStatus" role="status" aria-live="polite"></p>
+    <div id="notesTerms" aria-label="英文术语与发音"></div>
+  </details>
+  <h3>现场讲稿</h3><div id="notesText"></div>
+  <details id="notesSupplementPanel"><summary>展开讲解 · 类比、实例、误区与演示提示</summary><div id="notesSupplement"></div></details>
+  <div id="notesSources"></div>
+</dialog>
 <dialog id="helpDialog"><header><h2>演示操作</h2><button data-close="helpDialog">关闭</button></header><div class="help-grid">← / ↑ / PageUp：上一页<br>→ / ↓ / 空格 / PageDown：下一页<br>Home / End：第一页 / 最后一页<br>O：目录　N：讲师备注　F：全屏<br>Esc：关闭弹窗或退出全屏<br>Ctrl+P：打印讲义（每页一张）<br><br>从目录进入七种架构演示或五种协作模式培训。<br>协作模式支持情景切换、上一步、下一步、重播和查看结果；流程与关键代码共享进度。<br><br>讲师备注显示在当前屏幕；投影时请用另一设备打开讲稿。</div></dialog>
 <dialog id="resultDialog"><header><h2 id="resultTitle">运行结果</h2><button data-close="resultDialog">关闭</button></header><pre id="resultText"></pre></dialog>
 <dialog id="outingLiveDialog" aria-labelledby="outingLiveTitle">
@@ -384,6 +401,7 @@ button.primary:hover{background:#076c70;border-color:#076c70;color:#fff}
 <script>
 'use strict';
 const COURSE=__COURSE__;
+const GLOSSARY=__GLOSSARY__;
 const REPLAY=__REPLAY__;
 const DEMO_TRADEOFFS=__DEMO_TRADEOFFS__;
 __PLAYER__

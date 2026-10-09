@@ -1,0 +1,34 @@
+#notesDialog{width:min(940px,94vw);box-sizing:border-box;overflow-wrap:anywhere}
+#notesDialog header{gap:16px;align-items:flex-start;position:sticky;top:-26px;background:#fff;z-index:2;padding:12px 0}
+#notesDialog header button{flex-shrink:0}
+#notesDialog h3{font-size:19px;margin:24px 0 10px}
+.notes-guide,.notes-pronunciation-note{font-size:14px;line-height:1.7;color:var(--muted)}
+#notesDialog details{margin:18px 0;border:1px solid var(--line);border-radius:8px;padding:12px 16px;background:#f7f9fc}
+#notesDialog summary{cursor:pointer;font-size:16px;font-weight:650;line-height:1.6}
+#notesTermCount{font-weight:400;color:var(--muted);font-size:14px}
+.notes-term-toolbar{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin-top:14px}
+.notes-search{display:flex;flex-direction:column;gap:6px;flex:1 1 200px;font-size:14px}
+.notes-search input{min-width:0;width:100%;box-sizing:border-box;border:1px solid #8ca2bd;background:#fff;border-radius:6px;padding:9px 10px;font:inherit;color:var(--ink)}
+.notes-all{display:flex;align-items:center;gap:6px;min-height:42px;font-size:14px}
+#notesDialog button{min-height:42px}
+#notesSpeechStatus{font-size:14px;line-height:1.6;margin:12px 0;color:var(--muted)}
+#notesTerms{display:grid;gap:10px}
+.notes-term{border:1px solid var(--line);border-radius:7px;padding:14px;background:#fff}
+.notes-term h4{font-size:17px;font-weight:600;margin:0 0 8px;line-height:1.7}
+.notes-term-ipa{font-family:"Segoe UI","Arial",sans-serif;font-weight:400;color:#425774;margin-left:8px}
+.notes-term p{font-size:15px;line-height:1.75;margin:4px 0 12px}
+.notes-term-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.notes-term-buttons button,#notesStopSpeech{font-size:14px;padding:7px 13px}
+.notes-term-buttons button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+#notesSupplement{white-space:pre-wrap;font-size:17px;line-height:1.9;margin-top:14px}
+#notesDialog :is(button,input,summary):focus-visible{outline:3px solid #215bea;outline-offset:3px}
+#notesDialog button:disabled{opacity:.65;cursor:not-allowed}
+@media(max-width:600px){
+  #notesDialog{padding:16px;max-height:90vh}
+  #notesDialog header{top:-16px}
+  #notesDialog h2{font-size:20px}
+  #notesDialog details{padding:10px}
+  #notesText{font-size:17px}
+  #notesSupplement{font-size:16px}
+  .notes-search{flex-basis:100%}
+}

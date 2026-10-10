@@ -1,5 +1,7 @@
 # 高级推理框架与多 Agent 协作 · 培训包
 
+首次了解本项目，请先阅读 [项目说明](docs/project-overview.md)：包含项目用途、技术组成、目录结构、环境安装、课件与真实演示启动、新产品开发流程，以及验证和交付方式。文档中的命令统一从 `agent-training/` 目录执行。
+
 首次从 Git 克隆后，安装 requirements.txt 并运行 `python build.py` 生成课件。打开 [index.html](index.html) 讲课；用 VS Code 打开当前目录，按 F5 运行真实协作代码。文件位置见 [目录说明](docs/directory-guide.md)，提交范围见 [Git 文件管理](docs/git-management.md)。
 
 | 目录 | 内容 |

@@ -33,6 +33,7 @@ agent-training/
 
 ## 常用入口
 
+- [项目说明与快速开始](project-overview.md)
 - [主课件](../index.html)
 - [五种协作模式运行指南](collaboration-demo-guide.md)
 - [框架演示手卡](framework-demo-guide.md)
